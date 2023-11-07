@@ -94,5 +94,14 @@ export class TagRepo implements ITagRepo {
       .delete()
       .where("user_id", userId)
       .where("id", tagId);
+
+    await this.db.es.deleteByQuery({
+      index: ES_INDEX.TAGS,
+      query: {
+        bool: {
+          must: [{ match: { id: tagId } }, { match: { user_id: userId } }],
+        },
+      },
+    });
   }
 }

@@ -32,4 +32,4 @@ ts\:run\:skip-es:
 	make db:up:pg && cd ./typescript && npm run start
 
 ts\:run:
-	cd ./typescript && npm run start
+	make db:up && cd ./typescript && npm run start
