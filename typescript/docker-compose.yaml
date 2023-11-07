@@ -1,0 +1,12 @@
+version: "3"
+services:
+  ts:
+    image: ts
+    container_name: ts
+    ports:
+      - 3001:3001
+    networks:
+      - backend-network
+networks:
+  backend-network:
+    external: true

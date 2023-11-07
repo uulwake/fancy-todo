@@ -1,19 +1,35 @@
+# service
+down:
+	docker compose down && cd ./typescript && docker compose down
+
 # database
+db\:migrate:
+	dbmate --wait up -v
+
 db\:up:
-	docker-compose up -d && dbmate up
+	docker compose up -d && make db:migrate
 
 db\:down:
-	docker-compose down
+	docker compose down
 
 db\:up\:pg:
-	docker-compose up -d pg && dbmate up
+	docker compose up -d pg && make db:migrate
 
 db\:up\:es:
-	docker-compose up -d es && dbmate up
+	docker compose up -d es
 
-# node ts
-node\:build:
-	cd ./ts && npm run build
+# typescript ts
+ts\:install:
+	cd ./typescript && npm install
+	
+ts\:build:
+	cd ./typescript && npm run build
 
-node\:dev:
-	cd ./ts && npm run dev
+ts\:dev:
+	cd ./typescript && npm run dev
+
+ts\:run\:skip-es:
+	make db:up:pg && cd ./typescript && npm run start
+
+ts\:run:
+	cd ./typescript && npm run start
