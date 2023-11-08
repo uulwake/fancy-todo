@@ -1,7 +1,6 @@
-# Fancy Todos
+# Fancy Todo
 
-Implementeing fancy todo API with 5 different languages such as Typescript, Go, Java, Rust, and Elixir.
-
+Implement fancy todo API with 5 different languages such as Typescript, Go, Java, Rust, and Elixir.
 
 ## Product Requirement
 
