@@ -9,7 +9,7 @@
     "db:up:pg": "docker compose up -d pg && dbmate up",
     "db:up:es": "docker compose up -d es && dbmate up",
     "build": "tsc && ncc build dist/index.js -o ncc",
-    "dev": "npm run build && node ncc/index.js",
+    "dev": "npm run build && NODE_ENV=development node ncc/index.js",
     "prestart": "docker build . --tag ts",
     "start": "docker compose up -d"
   },

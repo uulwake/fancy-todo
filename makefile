@@ -1,6 +1,19 @@
-# service
+all: hello
+
+hello: 
+	@printf "Welcome to the Fancy Todo written in 5 different languages.\n\
+	They are Typescript, Go, Java, Rust, and Elixir.\n\
+	Enjoy.\n"
+
+# tear down
 down:
 	docker compose down && cd ./typescript && docker compose down
+
+down\:db:
+	docker compose down
+
+down\:ts:
+	cd ./typescript && docker compose down
 
 # database
 db\:migrate:

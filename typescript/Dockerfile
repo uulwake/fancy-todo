@@ -10,6 +10,7 @@ FROM node:18-alpine
 WORKDIR /usr/app
 COPY --from=builder /usr/app/ncc .
 COPY --from=builder /usr/app/.env.production .
+ENV NODE_ENV=production
 EXPOSE 3001
 CMD ["node", "index.js"]
 
