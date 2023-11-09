@@ -10,17 +10,17 @@ down:
 	docker compose down
 
 # database
-db\:migrate:
-	dbmate --wait up -v
-
 db\:up:
-	docker compose up -d pg es && make wait:es && make db:migrate 
+	make db:up:pg && make db:up:es 
 
 db\:down:
 	docker compose down
 
+pg\:migrate:
+	dbmate --wait up -v
+
 db\:up\:pg:
-	docker compose up -d pg && make db:migrate
+	docker compose up -d pg && make pg:migrate
 
 db\:up\:es:
 	docker compose up -d es && make wait:es
@@ -30,10 +30,7 @@ wait\:es:
 
 # typescript ts
 ts\:build:
-	docker build . -f ts.Dockerfile -t ts
-
-ts\:up:
-	docker compose up -d ts
+	docker build . -f dockerfiles/ts.Dockerfile -t ts
 
 ts\:run:
-	make db:up && make ts:build && make ts:up
+	make db:up && make ts:build && docker compose up -d ts
