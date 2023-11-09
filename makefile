@@ -20,7 +20,7 @@ db\:migrate:
 	dbmate --wait up -v
 
 db\:up:
-	docker compose up -d && make db:migrate
+	docker compose up -d && make wait && make db:migrate
 
 db\:down:
 	docker compose down
@@ -29,7 +29,10 @@ db\:up\:pg:
 	docker compose up -d pg && make db:migrate
 
 db\:up\:es:
-	docker compose up -d es
+	docker compose up -d es && make wait
+
+wait:
+	chmod +x ./wait-for-it.sh && ./wait-for-it.sh es:9200 -- echo "ElasticSearch database is up"
 
 # typescript ts
 ts\:install:

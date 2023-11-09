@@ -11,6 +11,11 @@ services:
       - "5432:5432"
     networks:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   es:
     container_name: es
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
@@ -24,10 +29,14 @@ services:
       - elastic-data:/usr/share/elasticsearch/data
     networks:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/shell/ || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 volumes:
   pg-data:
   elastic-data:
 networks:
   backend:
     name: backend-network
-    driver: bridge
