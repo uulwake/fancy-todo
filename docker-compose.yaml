@@ -10,11 +10,11 @@ services:
       - pg
       - es
     healthcheck:
-      test: ["CMD", "node ./healthcheck.js"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/healthcheck || exit 1"]
       interval: 5s
       timeout: 2s
       retries: 5
-      start_period: 30s
+      start_period: 5s
   pg:
     container_name: pg
     image: "postgres"
@@ -27,8 +27,8 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
-      timeout: 5s
-      start_period: 30s
+      timeout: 2s
+      start_period: 5s
       retries: 5
   es:
     container_name: es
@@ -43,10 +43,10 @@ services:
     volumes:
       - elastic-data:/usr/share/elasticsearch/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/shell/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
       interval: 5s
-      timeout: 5s
-      start_period: 30s
+      timeout: 2s
+      start_period: 5s
       retries: 5
 volumes:
   pg-data:
