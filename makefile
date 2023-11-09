@@ -7,20 +7,14 @@ hello:
 
 # tear down
 down:
-	docker compose down && cd ./typescript && docker compose down
-
-down\:db:
 	docker compose down
-
-down\:ts:
-	cd ./typescript && docker compose down
 
 # database
 db\:migrate:
 	dbmate --wait up -v
 
 db\:up:
-	docker compose up -d && make wait && make db:migrate
+	docker compose up -d pg es && make wait:es && make db:migrate 
 
 db\:down:
 	docker compose down
@@ -29,23 +23,17 @@ db\:up\:pg:
 	docker compose up -d pg && make db:migrate
 
 db\:up\:es:
-	docker compose up -d es && make wait
+	docker compose up -d es && make wait:es
 
-wait:
-	chmod +x ./wait-for-it.sh && ./wait-for-it.sh es:9200 -- echo "ElasticSearch database is up"
+wait\:es:
+	@printf "waiting ElasticSeach...\n" && chmod +x ./wait-for-it.sh && ./wait-for-it.sh es:9200 -- echo "waiting is done"
 
 # typescript ts
-ts\:install:
-	cd ./typescript && npm install
-	
 ts\:build:
-	cd ./typescript && npm run build
+	docker build . -f ts.Dockerfile -t ts
 
-ts\:dev:
-	cd ./typescript && npm run dev
-
-ts\:run\:skip-es:
-	make db:up:pg && cd ./typescript && npm run start
+ts\:up:
+	docker compose up -d ts
 
 ts\:run:
-	make db:up && cd ./typescript && npm run start
+	make db:up && make ts:build && make ts:up

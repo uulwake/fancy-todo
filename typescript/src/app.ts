@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 
@@ -21,6 +21,9 @@ const repo = initRepo(db);
 const service = initService(repo);
 const router = initHandler(service);
 
+app.get("/healthcheck", (req: Request, res: Response) => {
+  res.json({ status: "ok" });
+});
 app.use("/v1", router);
 app.use(error);
 

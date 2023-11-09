@@ -6,10 +6,11 @@ export default (): Client => {
   });
 
   client.ping().catch((err) => {
-    // only exit in production
-    // in dev, sometimes we do not need to turn on ES
+    console.error(`ElasticSearch connection error.`, err.message);
+
+    // exit only in prod
     if (process.env.NODE_ENV === "production") {
-      console.error(`ElasticSearch connection error.`, err);
+      console.error(err);
       process.exit(1);
     }
   });

@@ -1,5 +1,20 @@
 version: "3"
 services:
+  ts:
+    image: ts
+    container_name: ts
+    restart: always
+    ports:
+      - 3001:3001
+    depends_on:
+      - pg
+      - es
+    healthcheck:
+      test: ["CMD", "node ./healthcheck.js"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+      start_period: 30s
   pg:
     container_name: pg
     image: "postgres"
@@ -9,15 +24,15 @@ services:
       - pg-data:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
-    networks:
-      - backend
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
+      start_period: 30s
       retries: 5
   es:
     container_name: es
+    restart: always
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
     ports:
       - 9200:9200
@@ -27,16 +42,12 @@ services:
       - xpack.security.enabled=false
     volumes:
       - elastic-data:/usr/share/elasticsearch/data
-    networks:
-      - backend
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200/shell/ || exit 1"]
       interval: 5s
       timeout: 5s
+      start_period: 30s
       retries: 5
 volumes:
   pg-data:
   elastic-data:
-networks:
-  backend:
-    name: backend-network
