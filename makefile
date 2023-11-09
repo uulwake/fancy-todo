@@ -28,9 +28,9 @@ db\:up\:es:
 wait\:es:
 	@printf "waiting ElasticSeach...\n" && chmod +x ./wait-for-it.sh && ./wait-for-it.sh es:9200 -- echo "waiting is done"
 
-# typescript ts
+# ts
 ts\:build:
 	docker build . -f dockerfiles/ts.Dockerfile -t ts
 
 ts\:run:
-	make db:up && make ts:build && docker compose up -d ts
+	make db:up && docker compose up -d ts
