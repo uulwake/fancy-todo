@@ -30,7 +30,7 @@ wait\:es:
 
 # ts
 ts\:build:
-	docker build . -f dockerfiles/ts.Dockerfile -t ts
+	docker compose build ts
 
 ts\:run:
 	make db:up && docker compose up -d ts

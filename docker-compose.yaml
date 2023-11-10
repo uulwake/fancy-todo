@@ -1,6 +1,9 @@
 version: "3"
 services:
   ts:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/ts.Dockerfile
     image: ts
     container_name: ts
     restart: always
