@@ -5,6 +5,7 @@ import { UserModel } from "../models/user";
 import { RepositoryType } from "../repositories/types";
 import { CustomError } from "../libs/custom-error";
 import { IUserService } from "./interfaces";
+import { Context } from "../types/context";
 
 export class UserService implements IUserService {
   private repo;
@@ -12,13 +13,14 @@ export class UserService implements IUserService {
     this.repo = repo;
   }
 
-  private createUserToken(data: { id: number; email: string }): string {
+  private createUserToken(ctx: Context, data: { id: number; email: string }): string {
     return jwt.sign(data, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRED,
     });
   }
 
   async register(
+    ctx: Context,
     body: Pick<UserModel, "name" | "email" | "password">
   ): Promise<{ id: number; jwt_token: string }> {
     const now = new Date();
@@ -31,16 +33,17 @@ export class UserService implements IUserService {
       updated_at: now,
     };
 
-    const id = await this.repo.userRepo.createUser(userData);
-    const jwt_token = this.createUserToken({ id, email: userData.email });
+    const id = await this.repo.userRepo.createUser(ctx, userData);
+    const jwt_token = this.createUserToken(ctx, { id, email: userData.email });
 
     return { id, jwt_token };
   }
 
   async login(
+    ctx: Context,
     body: Pick<UserModel, "email" | "password">
   ): Promise<{ id: number; jwt_token: string }> {
-    const user = await this.repo.userRepo.getUserDetail({
+    const user = await this.repo.userRepo.getUserDetail(ctx, {
       email: body.email,
       cols: ["id", "email", "password"],
     });
@@ -54,7 +57,7 @@ export class UserService implements IUserService {
       throw new CustomError({ message: "invalid email/password", status: 404 });
     }
 
-    const jwt_token = this.createUserToken({ id: user.id, email: user.email });
+    const jwt_token = this.createUserToken(ctx, { id: user.id, email: user.email });
     return { id: user.id, jwt_token };
   }
 }

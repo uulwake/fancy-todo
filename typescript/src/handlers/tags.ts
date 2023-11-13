@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { ServiceType } from "../services/types";
 import { BaseHandler } from "./base";
-import { authenticateJwt } from "../middlewares/authenticate";
+import { authenticateJwt } from "../middlewares";
 import { TagModel } from "../models/tag";
 import { getUserId } from "./utils";
 import { TagHandlerValidatorType } from "./validators/types";
+import { createContext } from "../libs/create-context";
 
 export class TagHandler extends BaseHandler {
   private service: ServiceType;
@@ -15,7 +16,7 @@ export class TagHandler extends BaseHandler {
     this.service = service;
     this.validator = validator;
 
-    this.router.use(authenticateJwt);
+    this.router.use(authenticateJwt());
     this.router.post("/", this.validator.createTag, this.createTag.bind(this));
     this.router.patch(
       "/:tag_id/tasks/:task_id",
@@ -41,6 +42,7 @@ export class TagHandler extends BaseHandler {
   ) {
     try {
       const tagId = await this.service.tagService.createTag(
+        createContext(req),
         getUserId(req),
         req.body
       );
@@ -59,7 +61,11 @@ export class TagHandler extends BaseHandler {
       const tagId = Number(req.params.tag_id);
       const taskId = Number(req.params.task_id);
 
-      await this.service.tagService.addExistingTagToTask(tagId, taskId);
+      await this.service.tagService.addExistingTagToTask(
+        createContext(req),
+        tagId,
+        taskId
+      );
       res.json({
         data: {
           tag: { id: tagId, task: { id: taskId } },
@@ -77,6 +83,7 @@ export class TagHandler extends BaseHandler {
   ) {
     try {
       const tags = await this.service.tagService.searchTask(
+        createContext(req),
         getUserId(req),
         req.query
       );
@@ -93,7 +100,11 @@ export class TagHandler extends BaseHandler {
   ) {
     try {
       const tagId = Number(req.params.tag_id);
-      await this.service.tagService.deleteTag(getUserId(req), tagId);
+      await this.service.tagService.deleteTag(
+        createContext(req),
+        getUserId(req),
+        tagId
+      );
       res.json({ data: { tag: { id: tagId } } });
     } catch (err) {
       next(err);

@@ -5,6 +5,7 @@ import { TaskModel } from "../models/task";
 import { TaskTagModel } from "../models/task_tag";
 import { DBType } from "../databases";
 import { PageInfoQueryType } from "../types/page";
+import { Context } from "../types/context";
 
 export class TaskRepo implements ITaskRepo {
   private db: DBType;
@@ -13,7 +14,7 @@ export class TaskRepo implements ITaskRepo {
     this.db = db;
   }
 
-  async getLastOrderNumber(userId: number): Promise<number> {
+  async getLastOrderNumber(ctx: Context, userId: number): Promise<number> {
     const res = await this.db
       .pg<TaskModel>("tasks")
       .select("id", "order")
@@ -29,6 +30,7 @@ export class TaskRepo implements ITaskRepo {
   }
 
   async createTask(
+    ctx: Context,
     data: Omit<TaskModel, "id">,
     tagIds: number[]
   ): Promise<number> {
@@ -81,6 +83,7 @@ export class TaskRepo implements ITaskRepo {
   }
 
   async getTagsByTaskId(
+    ctx: Context,
     taskIds: number[]
   ): Promise<{ [key: number]: TagModel[] }> {
     const tags = await this.db
@@ -104,6 +107,7 @@ export class TaskRepo implements ITaskRepo {
   }
 
   async getListOfTasks(
+    ctx: Context,
     userId: number,
     queryParam: PageInfoQueryType & { status?: string; tag_id?: number }
   ): Promise<Omit<TaskModel, "description">[]> {
@@ -140,6 +144,7 @@ export class TaskRepo implements ITaskRepo {
     const tasks = await query.orderBy("tasks.id", "desc");
 
     const mapTagByTaskId = await this.getTagsByTaskId(
+      ctx,
       tasks.map((task) => task.id)
     );
 
@@ -151,6 +156,7 @@ export class TaskRepo implements ITaskRepo {
   }
 
   async getTotalOfTasks(
+    ctx: Context,
     userId: number,
     queryParam: { status?: string; tag_id?: number }
   ): Promise<number> {
@@ -175,6 +181,7 @@ export class TaskRepo implements ITaskRepo {
   }
 
   async searchTask(
+    ctx: Context,
     userId: number,
     queryParam: { title: string }
   ): Promise<Pick<TaskModel, "id" | "user_id" | "title" | "status">[]> {
@@ -216,6 +223,7 @@ export class TaskRepo implements ITaskRepo {
   }
 
   async getTaskDetail(
+    ctx: Context,
     userId: number,
     taskId: number
   ): Promise<(TaskModel & { tags: TagModel[] }) | null> {
@@ -228,11 +236,12 @@ export class TaskRepo implements ITaskRepo {
 
     if (!res) return null;
 
-    const mapTagByTaskId = await this.getTagsByTaskId([taskId]);
+    const mapTagByTaskId = await this.getTagsByTaskId(ctx, [taskId]);
     return { ...res, tags: mapTagByTaskId[taskId] };
   }
 
   async updateTask(
+    ctx: Context,
     userId: number,
     taskId: number,
     data: Partial<Pick<TaskModel, "title" | "description" | "status" | "order">>
@@ -269,7 +278,11 @@ export class TaskRepo implements ITaskRepo {
     });
   }
 
-  async deleteTask(userId: number, taskId: number): Promise<void> {
+  async deleteTask(
+    ctx: Context,
+    userId: number,
+    taskId: number
+  ): Promise<void> {
     await this.db
       .pg<TaskModel>("tasks")
       .delete()

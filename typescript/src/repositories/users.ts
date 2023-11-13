@@ -1,6 +1,7 @@
 import { IUserRepo } from "./interfaces";
 import { UserModel, UserModelField } from "../models/user";
 import { DBType } from "../databases";
+import { Context } from "../types/context";
 
 export class UserRepo implements IUserRepo {
   private db: DBType;
@@ -9,7 +10,7 @@ export class UserRepo implements IUserRepo {
     this.db = db;
   }
 
-  async createUser(data: Omit<UserModel, "id">): Promise<number> {
+  async createUser(ctx: Context, data: Omit<UserModel, "id">): Promise<number> {
     const res = await this.db
       .pg<UserModel>("users")
       .insert(data)
@@ -18,7 +19,7 @@ export class UserRepo implements IUserRepo {
     return res[0].id;
   }
 
-  async getUserDetail(opt: {
+  async getUserDetail(ctx: Context, opt: {
     id?: number;
     email?: string;
     cols?: UserModelField[];

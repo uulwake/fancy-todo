@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response, Router } from "express";
 
 import { BaseHandler } from "./base";
-import { authenticateJwt } from "../middlewares/authenticate";
+import { authenticateJwt } from "../middlewares";
 import { ServiceType } from "../services/types";
 import { TaskModel } from "../models/task";
 import { PageInfoReqQueryType } from "../types/page";
 import { getUserId, sanitizePageQuery } from "./utils";
 import { TaskHandlerValidatorType } from "./validators/types";
+import { createContext } from "../libs/create-context";
 
 export class TaskHandler extends BaseHandler {
   private service: ServiceType;
@@ -17,7 +18,7 @@ export class TaskHandler extends BaseHandler {
     this.service = service;
     this.validator = validator;
 
-    this.router.use(authenticateJwt);
+    this.router.use(authenticateJwt());
     this.router.post(
       "/",
       this.validator.createTask,
@@ -61,6 +62,7 @@ export class TaskHandler extends BaseHandler {
   ) {
     try {
       const taskId = await this.service.taskService.createTask(
+        createContext(req),
         getUserId(req),
         req.body
       );
@@ -106,11 +108,15 @@ export class TaskHandler extends BaseHandler {
       }
 
       const [tasks, total] = await Promise.all([
-        this.service.taskService.getListOfTasks(userId, {
+        this.service.taskService.getListOfTasks(createContext(req), userId, {
           ...pageQuery,
           ...whereQuery,
         }),
-        this.service.taskService.getTotalOfTasks(userId, whereQuery),
+        this.service.taskService.getTotalOfTasks(
+          createContext(req),
+          userId,
+          whereQuery
+        ),
       ]);
 
       res.json({
@@ -133,6 +139,7 @@ export class TaskHandler extends BaseHandler {
   ) {
     try {
       const tasks = await this.service.taskService.searchTask(
+        createContext(req),
         getUserId(req),
         req.query
       );
@@ -152,6 +159,7 @@ export class TaskHandler extends BaseHandler {
     try {
       const taskId = Number(req.params.task_id);
       const task = await this.service.taskService.getTaskDetail(
+        createContext(req),
         getUserId(req),
         taskId
       );
@@ -177,6 +185,7 @@ export class TaskHandler extends BaseHandler {
     try {
       const taskId = Number(req.params.task_id);
       await this.service.taskService.updateTask(
+        createContext(req),
         getUserId(req),
         taskId,
         req.body
@@ -194,7 +203,11 @@ export class TaskHandler extends BaseHandler {
   ) {
     try {
       const taskId = Number(req.params.task_id);
-      await this.service.taskService.deleteTask(getUserId(req), taskId);
+      await this.service.taskService.deleteTask(
+        createContext(req),
+        getUserId(req),
+        taskId
+      );
       res.json({
         data: { task: { id: taskId } },
       });

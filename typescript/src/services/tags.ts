@@ -1,5 +1,6 @@
 import { TagModel } from "../models/tag";
 import { RepositoryType } from "../repositories/types";
+import { Context } from "../types/context";
 import { ITagService } from "./interfaces";
 
 export class TagService implements ITagService {
@@ -10,6 +11,7 @@ export class TagService implements ITagService {
   }
 
   async createTag(
+    ctx: Context,
     userId: number,
     body: Pick<TagModel, "name"> & { task_id?: number }
   ): Promise<number> {
@@ -22,12 +24,12 @@ export class TagService implements ITagService {
       updated_at: now,
     };
 
-    return this.repo.tagRepo.createTag(data, body.task_id);
+    return this.repo.tagRepo.createTag(ctx, data, body.task_id);
   }
 
-  async addExistingTagToTask(tagId: number, taskId: number) {
+  async addExistingTagToTask(ctx: Context, tagId: number, taskId: number) {
     const now = new Date();
-    await this.repo.tagRepo.addExistingTagToTask({
+    await this.repo.tagRepo.addExistingTagToTask(ctx, {
       tag_id: tagId,
       task_id: taskId,
       created_at: now,
@@ -36,13 +38,14 @@ export class TagService implements ITagService {
   }
 
   async searchTask(
+    ctx: Context,
     userId: number,
     queryParam: { name: string }
   ): Promise<Pick<TagModel, "id" | "name">[]> {
-    return this.repo.tagRepo.searchTag(userId, queryParam);
+    return this.repo.tagRepo.searchTag(ctx, userId, queryParam);
   }
 
-  async deleteTag(userId: number, tagId: number) {
-    await this.repo.tagRepo.deleteTag(userId, tagId);
+  async deleteTag(ctx: Context, userId: number, tagId: number) {
+    await this.repo.tagRepo.deleteTag(ctx, userId, tagId);
   }
 }

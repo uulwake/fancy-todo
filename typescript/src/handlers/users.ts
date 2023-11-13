@@ -4,6 +4,7 @@ import { UserModel } from "../models/user";
 import { ServiceType } from "../services/types";
 import { BaseHandler } from "./base";
 import { UserHandlerValidatorType } from "./validators/types";
+import { createContext } from "../libs/create-context";
 
 export class UserHandler extends BaseHandler {
   private service: ServiceType;
@@ -31,6 +32,7 @@ export class UserHandler extends BaseHandler {
   ) {
     try {
       const { id, jwt_token } = await this.service.userService.register(
+        createContext(req),
         req.body
       );
       res.json({ data: { user: { id }, jwt_token } });
@@ -45,7 +47,10 @@ export class UserHandler extends BaseHandler {
     next: NextFunction
   ) {
     try {
-      const { id, jwt_token } = await this.service.userService.login(req.body);
+      const { id, jwt_token } = await this.service.userService.login(
+        createContext(req),
+        req.body
+      );
       res.json({ data: { user: { id }, jwt_token } });
     } catch (err) {
       next(err);

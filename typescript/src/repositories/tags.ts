@@ -3,6 +3,7 @@ import { ITagRepo } from "./interfaces";
 import { TagModel } from "../models/tag";
 import { TaskTagModel } from "../models/task_tag";
 import { DBType } from "../databases";
+import { Context } from "../types/context";
 
 export class TagRepo implements ITagRepo {
   private db: DBType;
@@ -12,6 +13,7 @@ export class TagRepo implements ITagRepo {
   }
 
   async createTag(
+    ctx: Context,
     data: Omit<TagModel, "id">,
     taskId?: number
   ): Promise<number> {
@@ -46,11 +48,12 @@ export class TagRepo implements ITagRepo {
     }
   }
 
-  async addExistingTagToTask(data: TaskTagModel): Promise<void> {
+  async addExistingTagToTask(ctx: Context, data: TaskTagModel): Promise<void> {
     await this.db.pg<TaskTagModel>("tasks_tags").insert(data);
   }
 
   async searchTag(
+    ctx: Context,
     userId: number,
     queryParam: { name: string }
   ): Promise<Pick<TagModel, "id" | "name">[]> {
@@ -88,7 +91,7 @@ export class TagRepo implements ITagRepo {
     return tags;
   }
 
-  async deleteTag(userId: number, tagId: number): Promise<void> {
+  async deleteTag(ctx: Context, userId: number, tagId: number): Promise<void> {
     await this.db
       .pg<TagModel>("tags")
       .delete()
