@@ -28,13 +28,13 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
 3. User can delete a tag
 4. User can search tag by name
 
-## API Contract
+## API Contract V1
 
 ### User
 
 1. Register User
 
-   - Endpoint: `POST /users/register`
+   - Endpoint: `POST /v1/users/register`
    - Request:
      ```json
      {
@@ -56,7 +56,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
      ```
 
 2. Login User
-   - Endpoint: `POST /users/login`
+   - Endpoint: `POST /v1/users/login`
    - Request:
      ```json
      {
@@ -80,7 +80,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
 
 1. Create Task
 
-   - Endpoint: `POST /tasks`
+   - Endpoint: `POST /v1/tasks`
    - Request:
      ```json
      {
@@ -101,7 +101,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
      ```
 
 2. Get Detail Task
-   - Endpoint: `GET /tasks/:task_id`
+   - Endpoint: `GET /v1/tasks/:task_id`
    - Response:
      ```json
      {
@@ -119,7 +119,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
      }
      ```
 3. Get List of Tasks
-   - Endpoint: `GET /tasks`
+   - Endpoint: `GET /v1/tasks`
    - Query:
      - status: string. Ex: `?status=completed`
      - page_size: number. Ex: `?page_size=10`
@@ -150,7 +150,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
      }
      ```
 4. Update Task - Reorder, Title, Content, Tag, Status
-   - Endpoint: `PATCH /tasks/:task_id`
+   - Endpoint: `PATCH /v1/tasks/:task_id`
    - Request:
      ```json
      {
@@ -172,7 +172,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
      ```
 5. Delete Task
 
-   - Endpoint: `DELETE /tasks/:task_id`
+   - Endpoint: `DELETE /v1/tasks/:task_id`
    - Response:
      ```json
      {
@@ -185,7 +185,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
      ```
 
 6. Search Task by Title
-   - Endpoint: `GET /tasks/search`
+   - Endpoint: `GET /v1/tasks/search`
    - Query:
      - title: string. Ex: `?title=Titl`
    - Response:
@@ -208,7 +208,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
 
 1. Add New Tag in Post
 
-   - Endpoint: `POST /tags`
+   - Endpoint: `POST /v1/tags`
    - Request:
      ```json
      {
@@ -229,7 +229,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
 
 2. Add Existing Tag in Task
 
-   - Endpoint: `PATCH /tags/:tag_id/tasks/:task_id`
+   - Endpoint: `PATCH /v1/tags/:tag_id/tasks/:task_id`
    - Request:
      ```json
      {}
@@ -250,7 +250,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
 
 3. Delete Tag
 
-   - Endpoint: `DELETE /tags/tag_id`
+   - Endpoint: `DELETE /v1/tags/tag_id`
    - Response:
      ```json
      {
@@ -264,7 +264,7 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
 
 4. Search Tag by Name
 
-   - Endpoint: `GET /tags/search`
+   - Endpoint: `GET /v1/tags/search`
    - Query
      - name: string. Ex: `?name=tag_`
    - Response:
