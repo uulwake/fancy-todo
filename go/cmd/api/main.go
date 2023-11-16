@@ -30,6 +30,7 @@ func main() {
 
 	// handler
 	e := echo.New()
+	e.HTTPErrorHandler = handler.CustomHTTPErrorHandler
 
 	v1Group := e.Group("/v1")
 	handler.InitUserHandler(v1Group.Group("/users"), env, userService)
