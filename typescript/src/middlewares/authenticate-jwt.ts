@@ -5,7 +5,7 @@ import { CustomError } from "../libs/custom-error";
 
 export default () => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const jwtToken = req.headers.jwt_token;
+    const jwtToken = req.headers["jwt-token"];
     if (!jwtToken) {
       next(new CustomError({ message: "Missing JWT Token", status: 401 }));
       return;
