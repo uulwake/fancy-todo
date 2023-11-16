@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fancy-todo/internal/config"
+	"fancy-todo/internal/model"
 	"fancy-todo/internal/service"
 	"fmt"
 	"net/http"
@@ -22,8 +24,29 @@ type UserHandler struct {
 }
 
 func (uh *UserHandler) Register(c echo.Context) error {
-	fmt.Println("UserHandler: Register")
-	uh.UserService.Register(context.TODO(), service.UserServiceRegisterInput{})
+	var body UserRegisterRequest
+	err := json.NewDecoder(c.Request().Body).Decode(&body)
+	if err != nil {
+		return err
+	}
+	
+	fmt.Println("UserHandler: Register", body)
+	userId, err := uh.UserService.Register(context.TODO(), service.UserServiceRegisterInput{})
+	if err != nil {
+		return err
+	}
 
-	return c.JSON(http.StatusOK, UserRegisterResponse{Message: "success register"})
+	jwtToken, err := uh.UserService.CreateJwtToken(context.TODO(), userId, body.Email)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, UserRegisterResponse{
+		Data: UserRegisterResponseData{
+			User: model.User{
+				ID: userId,
+			},
+			Token: jwtToken,
+		},
+	})
 }

@@ -5,6 +5,9 @@ import (
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/repository"
 	"fmt"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func NewUserService(env *config.Env, userRepo UserRepo) *UserService {
@@ -19,8 +22,25 @@ type UserService struct {
 	UserRepo UserRepo
 }
 
-func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInput) (int, string, error) {
-	fmt.Println("User Service: login")
+func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInput) (int, error) {
+	fmt.Println("User Service: Register")
 	us.UserRepo.Create(ctx, repository.CreateUserInput{})
-	return 0, "", nil
+	return 1, nil
+}
+
+func (us *UserService) CreateJwtToken(ctx context.Context, userId int, email string) (string, error) {
+	fmt.Println("User Service: CreateJwtToken")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id": userId,
+		"email": email,
+		"exp": time.Now().Add(time.Duration(us.Env.JwtExpired * int(time.Hour))).Unix(),
+	})
+
+	stringToken, err := token.SignedString([]byte(us.Env.JwtSecret))
+	if err != nil {
+		return "", err
+	}
+
+	return stringToken, nil
 }

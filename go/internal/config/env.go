@@ -35,5 +35,5 @@ type Env struct {
 	Port string  `env:"PORT"`
 	Salt int `env:"SALT"`
 	JwtSecret string `env:"JWT_SECRET"`
-	JwtExpired string `env:"JWT_EXPIRED"`
+	JwtExpired int `env:"JWT_EXPIRED"`
 }
