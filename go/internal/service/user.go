@@ -5,7 +5,6 @@ import (
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/libs"
 	"fancy-todo/internal/repository"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -25,9 +24,7 @@ type UserService struct {
 	userRepo UserRepo
 }
 
-func (us *UserService) CreateJwtToken(ctx context.Context, userId int, email string) (string, error) {
-	fmt.Println("User Service: CreateJwtToken")
-
+func (us *UserService) CreateJwtToken(ctx context.Context, userId int64, email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id": userId,
 		"email": email,
@@ -42,7 +39,7 @@ func (us *UserService) CreateJwtToken(ctx context.Context, userId int, email str
 	return stringToken, nil
 }
 
-func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInput) (int, error) {
+func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInput) (int64, error) {
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(data.Password), us.env.Salt)
 	if err != nil {
 		return 0, libs.CustomError{
@@ -51,10 +48,9 @@ func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInp
 		}
 	}
 
-	us.userRepo.Create(ctx, repository.CreateUserInput{
+	return us.userRepo.Create(ctx, repository.CreateUserInput{
 		Name: data.Name,
 		Email: data.Email,
 		Password: string(hashedPwd),
 	})
-	return 1, nil
 }

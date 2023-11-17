@@ -6,7 +6,6 @@ import (
 	"fancy-todo/internal/libs"
 	"fancy-todo/internal/model"
 	"fancy-todo/internal/service"
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -45,7 +44,6 @@ func (uh *UserHandler) Register(c echo.Context) error {
 		}
 	}
 
-	fmt.Println("UserHandler: Register", body)
 	userId, err := uh.userService.Register(ctx, service.UserServiceRegisterInput{Name: body.Name, Email: body.Email, Password: body.Password})
 	if err != nil {
 		return err

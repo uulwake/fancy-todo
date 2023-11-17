@@ -6,5 +6,5 @@ import (
 )
 
 type UserRepo interface {
-	Create(ctx context.Context, data repository.CreateUserInput) (int, error)
+	Create(ctx context.Context, data repository.CreateUserInput) (int64, error)
 }
