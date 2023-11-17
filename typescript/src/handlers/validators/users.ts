@@ -23,6 +23,9 @@ export const userValidators: UserHandlerValidatorType = {
       .bail()
       .isString()
       .withMessage("password is not string")
+      .bail()
+      .isLength({min: 3, max: 20})
+      .withMessage("password minimum length is 3 and maximum length is 20")
       .bail(),
   ],
   login: [
