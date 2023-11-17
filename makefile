@@ -1,4 +1,4 @@
-all: hello
+default: hello
 
 hello: 
 	@printf "Welcome to the Fancy Todo written in 5 different languages.\n\
