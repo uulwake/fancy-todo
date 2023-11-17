@@ -7,6 +7,10 @@ type UserRegisterRequest struct {
 	Email string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=3,max=20"`
 }
+type UserLoginRequest struct {
+	Email string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=3,max=20"`
+}
 
 type UserRegisterResponseData struct {
 	model.User `json:"user"`

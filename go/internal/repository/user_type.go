@@ -7,7 +7,8 @@ type CreateUserInput struct {
 }
 
 type GetDetailUserInput struct {
-	ID int
+	ID int64
 	Email string
 	Cols []string
+	Values []any
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/libs"
+	"fancy-todo/internal/model"
 	"fancy-todo/internal/repository"
 	"net/http"
 	"time"
@@ -53,4 +54,30 @@ func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInp
 		Email: data.Email,
 		Password: string(hashedPwd),
 	})
+}
+
+func (us *UserService) Login(ctx context.Context, data UserServiceLoginInput) (int64, error) {
+	var user model.User
+	err := us.userRepo.GetDetail(ctx, repository.GetDetailUserInput{
+		Email: data.Email,
+		Cols: []string{"id", "email", "password"},
+		Values: []any{&user.ID, &user.Email, &user.Password},
+	})
+
+	if err != nil {
+		return 0, libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "Invalid email/password",
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
+	if err != nil {
+		return 0, libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "Invalid email/password",
+		}
+	}
+
+	return user.ID, nil
 }

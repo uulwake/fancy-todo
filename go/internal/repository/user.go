@@ -45,3 +45,30 @@ func (ur *UserRepo) Create(ctx context.Context, data CreateUserInput) (int64, er
 
 	return userId, nil
 }
+
+func (ur *UserRepo) GetDetail(ctx context.Context, queryOption GetDetailUserInput) error {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select(queryOption.Cols...).From("users")
+
+	if queryOption.ID != 0 {
+		sb.Where(sb.Equal("id", queryOption.ID))
+	}
+
+	if queryOption.Email != "" {
+		sb.Where(sb.Equal("email", queryOption.Email))
+	}
+
+	sb.Limit(1)
+
+	query, args := sb.Build()
+	
+	err := ur.db.Pg.QueryRow(query, args...).Scan(queryOption.Values...)
+	if err != nil {
+		return libs.CustomError{
+			HTTPCode: http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
+}
