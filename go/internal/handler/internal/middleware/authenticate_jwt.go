@@ -39,7 +39,7 @@ func AuthenticateJwt(env *config.Env) echo.MiddlewareFunc {
 					Message: "Jwt claims does not have id",
 				}
 			}
-			c.Set("user_id", id)
+			c.Set("user_id", int64(id.(float64)))
 
 			email, ok := claims["email"]
 			if !ok {

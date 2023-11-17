@@ -17,17 +17,12 @@ export class TaskService implements ITaskService {
     userId: number,
     data: Pick<TaskModel, "title" | "description"> & { tag_ids: number[] }
   ): Promise<number> {
-    const lastOrderNum = await this.repo.taskRepo.getLastOrderNumber(
-      ctx,
-      userId
-    );
     const now = new Date();
     const taskData = {
       user_id: userId,
       title: data.title,
       description: data.description,
       status: TASK_STATUS.ON_GOING,
-      order: lastOrderNum + 1,
       created_at: now,
       updated_at: now,
     };

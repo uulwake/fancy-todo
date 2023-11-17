@@ -14,35 +14,19 @@ export class TaskRepo implements ITaskRepo {
     this.db = db;
   }
 
-  async getLastOrderNumber(ctx: Context, userId: number): Promise<number> {
-    const res = await this.db
-      .pg<TaskModel>("tasks")
-      .select("id", "order")
-      .where("user_id", userId)
-      .orderBy("order", "desc")
-      .first();
-
-    if (!res) {
-      return 0;
-    }
-
-    return res.order;
-  }
-
   async createTask(
     ctx: Context,
-    data: Omit<TaskModel, "id">,
+    data: Omit<TaskModel, "id" | "order">,
     tagIds: number[]
   ): Promise<number> {
     const tx = await this.db.pg.transaction();
 
     try {
-      const taskData: Omit<TaskModel, "id"> = {
+      const taskData: Omit<TaskModel, "id" | "order"> = {
         user_id: data.user_id,
         title: data.title,
         description: data.description,
         status: data.status,
-        order: data.order,
         created_at: data.created_at,
         updated_at: data.updated_at,
       };

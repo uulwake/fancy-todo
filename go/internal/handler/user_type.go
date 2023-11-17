@@ -12,11 +12,11 @@ type UserLoginRequest struct {
 	Password string `json:"password" validate:"required,min=3,max=20"`
 }
 
-type UserRegisterResponseData struct {
+type UserRegisterLoginResponseData struct {
 	model.User `json:"user"`
 	Token string `json:"jwt_token"`
 }
 
-type UserRegisterResponse struct {
-	Data UserRegisterResponseData `json:"data"`
+type UserRegisterLoginResponse struct {
+	Data UserRegisterLoginResponseData `json:"data"`
 }

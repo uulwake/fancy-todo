@@ -12,12 +12,10 @@ import (
 )
 
 func NewUserRepo(env *config.Env, db *database.Db) *UserRepo {
-	userRepo := &UserRepo{
+	return &UserRepo{
 		env: env,
 		db: db,
 	}
-
-	return userRepo
 }
 
 type UserRepo struct {
@@ -27,12 +25,14 @@ type UserRepo struct {
 
 func (ur *UserRepo) Create(ctx context.Context, data CreateUserInput) (int64, error) {
 	now := time.Now()
-	sb := sqlbuilder.PostgreSQL.NewInsertBuilder()
-	sb.InsertInto("users").Cols("name", "email", "password", "created_at", "updated_at")
-	sb.Values(data.Name, data.Email, data.Password, now, now)
-	sb.SQL("RETURNING id")
 
-	query, args := sb.Build()
+	sb := sqlbuilder.PostgreSQL.NewInsertBuilder()
+	query, args := sb.
+		InsertInto("users").
+		Cols("name", "email", "password", "created_at", "updated_at").
+		Values(data.Name, data.Email, data.Password, now, now).
+		SQL("RETURNING id").
+		Build()
 
 	var userId int64
 	err := ur.db.Pg.QueryRow(query, args...).Scan(&userId)
@@ -48,7 +48,7 @@ func (ur *UserRepo) Create(ctx context.Context, data CreateUserInput) (int64, er
 
 func (ur *UserRepo) GetDetail(ctx context.Context, queryOption GetDetailUserInput) error {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select(queryOption.Cols...).From("users")
+	sb.Select(queryOption.Cols...).From("users").Limit(1)
 
 	if queryOption.ID != 0 {
 		sb.Where(sb.Equal("id", queryOption.ID))
@@ -57,8 +57,6 @@ func (ur *UserRepo) GetDetail(ctx context.Context, queryOption GetDetailUserInpu
 	if queryOption.Email != "" {
 		sb.Where(sb.Equal("email", queryOption.Email))
 	}
-
-	sb.Limit(1)
 
 	query, args := sb.Build()
 	

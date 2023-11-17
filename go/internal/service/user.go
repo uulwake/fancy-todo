@@ -13,7 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func NewUserService(env *config.Env, userRepo UserRepo) *UserService {
+func NewUserService(env *config.Env, userRepo IUserRepo) *UserService {
 	return &UserService{
 		env: env,
 		userRepo: userRepo,
@@ -22,7 +22,7 @@ func NewUserService(env *config.Env, userRepo UserRepo) *UserService {
 
 type UserService struct {
 	env *config.Env
-	userRepo UserRepo
+	userRepo IUserRepo
 }
 
 func (us *UserService) CreateJwtToken(ctx context.Context, userId int64, email string) (string, error) {

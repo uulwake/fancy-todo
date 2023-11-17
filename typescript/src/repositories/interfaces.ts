@@ -18,10 +18,9 @@ export interface IUserRepo {
 }
 
 export interface ITaskRepo {
-  getLastOrderNumber(ctx: Context, userId: number): Promise<number>;
   createTask(
     ctx: Context,
-    data: Omit<TaskModel, "id">,
+    data: Omit<TaskModel, "id" | "order">,
     tagIds: number[]
   ): Promise<number>;
   getListOfTasks(

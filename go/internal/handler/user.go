@@ -10,8 +10,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func InitUserHandler(echoGroup *echo.Group, env *config.Env, validate *validator.Validate, userService UserService) {
-	uh := &UserHandler{echoGroup: echoGroup, env: env, validate: validate, userService: userService}
+func InitUserHandler(echoGroup *echo.Group, env *config.Env, validate *validator.Validate, userService IUserService) {
+	uh := &UserHandler{
+		echoGroup: echoGroup, 
+		env: env, 
+		validate: validate, 
+		userService: userService,
+	}
 
 	uh.echoGroup.POST("/register", uh.Register)
 	uh.echoGroup.POST("/login", uh.Login)
@@ -21,7 +26,7 @@ type UserHandler struct {
 	echoGroup *echo.Group
 	env *config.Env
 	validate *validator.Validate
-	userService UserService
+	userService IUserService
 }
 
 func (uh *UserHandler) Register(c echo.Context) error {
@@ -41,8 +46,8 @@ func (uh *UserHandler) Register(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, UserRegisterResponse{
-		Data: UserRegisterResponseData{
+	return c.JSON(http.StatusOK, UserRegisterLoginResponse{
+		Data: UserRegisterLoginResponseData{
 			User: model.User{
 				ID: userId,
 			},
@@ -73,8 +78,8 @@ func (uh *UserHandler) Login(c echo.Context) error {
 	}
 
 
-	return c.JSON(http.StatusOK, UserRegisterResponse{
-		Data: UserRegisterResponseData{
+	return c.JSON(http.StatusOK, UserRegisterLoginResponse{
+		Data: UserRegisterLoginResponseData{
 			User: model.User{
 				ID: userId,
 			},
