@@ -3,7 +3,6 @@ package middleware
 import (
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/libs"
-	"fmt"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -13,8 +12,6 @@ import (
 func AuthenticateJwt(env *config.Env) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			fmt.Println("...authenticate-jwt...")
-	
 			jwtToken, ok := c.Request().Header["Jwt-Token"]
 			if !ok {
 				return libs.CustomError{

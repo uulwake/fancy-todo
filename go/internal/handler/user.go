@@ -31,7 +31,7 @@ func (uh *UserHandler) Register(c echo.Context) error {
 	}
 	
 	fmt.Println("UserHandler: Register", body)
-	userId, err := uh.UserService.Register(context.TODO(), service.UserServiceRegisterInput{})
+	userId, err := uh.UserService.Register(context.TODO(), service.UserServiceRegisterInput{Name: body.Name, Email: body.Email, Password: body.Password})
 	if err != nil {
 		return err
 	}
