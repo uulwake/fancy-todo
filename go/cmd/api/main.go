@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -30,6 +31,8 @@ func main() {
 
 	// handler
 	e := echo.New()
+	e.IPExtractor = echo.ExtractIPFromRealIPHeader()
+	e.Use(middleware.RequestID())
 	e.HTTPErrorHandler = handler.CustomHTTPErrorHandler
 
 	v1Group := e.Group("/v1")

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/model"
@@ -24,6 +23,8 @@ type UserHandler struct {
 }
 
 func (uh *UserHandler) Register(c echo.Context) error {
+	ctx := GenerateContext(c)
+
 	var body UserRegisterRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&body)
 	if err != nil {
@@ -31,12 +32,12 @@ func (uh *UserHandler) Register(c echo.Context) error {
 	}
 	
 	fmt.Println("UserHandler: Register", body)
-	userId, err := uh.UserService.Register(context.TODO(), service.UserServiceRegisterInput{Name: body.Name, Email: body.Email, Password: body.Password})
+	userId, err := uh.UserService.Register(ctx, service.UserServiceRegisterInput{Name: body.Name, Email: body.Email, Password: body.Password})
 	if err != nil {
 		return err
 	}
 
-	jwtToken, err := uh.UserService.CreateJwtToken(context.TODO(), userId, body.Email)
+	jwtToken, err := uh.UserService.CreateJwtToken(ctx, userId, body.Email)
 	if err != nil {
 		return err
 	}
