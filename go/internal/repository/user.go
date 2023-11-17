@@ -9,16 +9,16 @@ import (
 
 func NewUserRepo(env *config.Env, db *database.Db) *UserRepo {
 	userRepo := &UserRepo{
-		Env: env,
-		Db: db,
+		env: env,
+		db: db,
 	}
 
 	return userRepo
 }
 
 type UserRepo struct {
-	Env *config.Env
-	Db *database.Db
+	env *config.Env
+	db *database.Db
 }
 
 func (ur *UserRepo) Create(ctx context.Context, data CreateUserInput) (int, error) {

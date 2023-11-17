@@ -8,6 +8,7 @@ import (
 	"fancy-todo/internal/service"
 	"log"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -35,8 +36,9 @@ func main() {
 	e.Use(middleware.RequestID())
 	e.HTTPErrorHandler = handler.CustomHTTPErrorHandler
 
+	validate := validator.New()
 	v1Group := e.Group("/v1")
-	handler.InitUserHandler(v1Group.Group("/users"), env, userService)
+	handler.InitUserHandler(v1Group.Group("/users"), env, validate, userService)
 
 	e.Logger.Fatal(e.Start(":3001"))
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GenerateContext(c echo.Context) context.Context {
+func CreateContext(c echo.Context) context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, libs.RequestId, c.Response().Header().Get(echo.HeaderXRequestID))
 	ctx = context.WithValue(ctx, libs.IpAddress, c.RealIP())

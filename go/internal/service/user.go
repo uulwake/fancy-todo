@@ -15,14 +15,14 @@ import (
 
 func NewUserService(env *config.Env, userRepo UserRepo) *UserService {
 	return &UserService{
-		Env: env,
-		UserRepo: userRepo,
+		env: env,
+		userRepo: userRepo,
 	}
 }
 
 type UserService struct {
-	Env *config.Env
-	UserRepo UserRepo
+	env *config.Env
+	userRepo UserRepo
 }
 
 func (us *UserService) CreateJwtToken(ctx context.Context, userId int, email string) (string, error) {
@@ -31,10 +31,10 @@ func (us *UserService) CreateJwtToken(ctx context.Context, userId int, email str
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id": userId,
 		"email": email,
-		"exp": time.Now().Add(time.Duration(us.Env.JwtExpired * int(time.Hour))).Unix(),
+		"exp": time.Now().Add(time.Duration(us.env.JwtExpired * int(time.Hour))).Unix(),
 	})
 
-	stringToken, err := token.SignedString([]byte(us.Env.JwtSecret))
+	stringToken, err := token.SignedString([]byte(us.env.JwtSecret))
 	if err != nil {
 		return "", err
 	}
@@ -43,7 +43,7 @@ func (us *UserService) CreateJwtToken(ctx context.Context, userId int, email str
 }
 
 func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInput) (int, error) {
-	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(data.Password), us.Env.Salt)
+	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(data.Password), us.env.Salt)
 	if err != nil {
 		return 0, libs.CustomError{
 			HTTPCode: http.StatusInternalServerError,
@@ -51,7 +51,7 @@ func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInp
 		}
 	}
 
-	us.UserRepo.Create(ctx, repository.CreateUserInput{
+	us.userRepo.Create(ctx, repository.CreateUserInput{
 		Name: data.Name,
 		Email: data.Email,
 		Password: string(hashedPwd),
