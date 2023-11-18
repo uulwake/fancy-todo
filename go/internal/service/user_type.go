@@ -1,12 +1,12 @@
 package service
 
-type UserServiceRegisterInput struct {
+type UserRegisterInput struct {
 	Name string
 	Email string
 	Password string
 }
 
-type UserServiceLoginInput struct {
+type UserLoginInput struct {
 	Email string
 	Password string
 }

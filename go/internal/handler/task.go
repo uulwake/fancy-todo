@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/handler/internal/middleware"
 	"fancy-todo/internal/libs"
@@ -39,7 +40,7 @@ type TaskHandler struct {
 }
 
 func (th *TaskHandler) Create(c echo.Context) error {
-	var body TaskHandlerCreateBody
+	var body TaskCreateBody
 	ctx, err := PreprocessedRequest(c, th.validate, &body)
 	if err != nil {
 		return err
@@ -50,7 +51,7 @@ func (th *TaskHandler) Create(c echo.Context) error {
 		return err
 	}
 	
-	taskId, err := th.taskService.Create(ctx, service.TaskServiceCreateInput{
+	taskId, err := th.taskService.Create(ctx, service.TaskCreateInput{
 		UserId: userId,
 		Title: body.Title,
 		Description: body.Description,
@@ -61,8 +62,8 @@ func (th *TaskHandler) Create(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, TaskHandlerCreateResponse{
-		Data: TaskHandlerCreateResponseData{
+	return c.JSON(http.StatusOK, TaskCreateResponse{
+		Data: TaskCreateResponseData{
 			Task: model.Task{
 				ID: taskId,
 			},
@@ -71,7 +72,104 @@ func (th *TaskHandler) Create(c echo.Context) error {
 }
 
 func (th *TaskHandler) GetLists(c echo.Context) error {
-	return nil
+	ctx, err := PreprocessedRequest(c, th.validate, nil)
+	if err != nil {
+		return err
+	}
+
+	userId, err := GetUserIdFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	commonQueryParam, err := ConvertCommonQueryParam(c)
+	if err != nil {
+		return err
+	}
+
+	status := c.QueryParam("status")
+	tagIdStr := c.QueryParam("tag_id")
+
+	var tagId int64
+	if tagIdStr != "" {
+		tagId, err = strconv.ParseInt(tagIdStr, 10, 64)
+		if err != nil {
+			return libs.CustomError{
+				HTTPCode: http.StatusBadRequest,
+				Message: fmt.Sprintf("invalid tag ID %s", tagIdStr),
+			}
+		}
+	} 
+
+	queryParamLists := TaskGetListsQueryParam{
+		QueryParam: commonQueryParam,
+		Status: status,
+		TagId: tagId,
+	}
+
+	queryParamTotal := TaskGetTotalQueryParam{
+		Status: status,
+		TagId: tagId,
+	}
+
+	getListsOutputChan := make(chan []model.Task, 1)
+	getTotalOutputChan := make(chan int64, 1)
+	errorChan := make(chan error, 2)
+
+		
+	go func(getListsOutputChan chan<- []model.Task, errorChan chan<- error, ctx context.Context, userId int64, queryParam TaskGetListsQueryParam) {
+		tasks, err := th.taskService.GetLists(ctx, userId, service.TaskGetListsQueryParam{
+			QueryParam: queryParam.QueryParam,
+			Status: queryParam.Status,
+			TagId: queryParam.TagId,
+		})
+
+		getListsOutputChan <- tasks
+		errorChan <- err
+		
+		close(getListsOutputChan)
+	}(getListsOutputChan, errorChan, ctx, userId, queryParamLists)
+
+
+	go func(getTotalOutputChan chan<- int64, errorChan chan<- error, ctx context.Context, userId int64, queryParam TaskGetTotalQueryParam) {
+		total, err := th.taskService.GetTotal(ctx, userId, service.TaskGetTotalQueryParam{
+			Status: queryParam.Status,
+			TagId: queryParam.TagId,
+		})
+
+		getTotalOutputChan <- total
+		errorChan <- err
+
+		close(getTotalOutputChan)
+	}(getTotalOutputChan, errorChan, ctx, userId, queryParamTotal)
+
+
+	tasks := <-getListsOutputChan
+	total := <-getTotalOutputChan
+
+	err1 := <-errorChan
+	err2 := <-errorChan 
+	close(errorChan)
+
+	if err1 != nil {
+		return err1
+	}
+
+	if err2 != nil {
+		return err2
+	}
+
+
+	return c.JSON(http.StatusOK, TaskGetListsResponse{
+		Data: TaskGetListData{
+			Tasks: tasks,
+		},
+		Page: libs.Pagination{
+			Size: queryParamLists.PageSize,
+			Number: queryParamLists.PageNumber,
+			Total: total,
+		},
+	})	
 }
 
 func (th *TaskHandler) Search(c echo.Context) error {
@@ -103,8 +201,8 @@ func (th *TaskHandler) GetDetailById(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, TaskHandlerGetDetailResponse{
-		Data: TaskHandlerGetDetailResponseData{
+	return c.JSON(http.StatusOK, TaskGetDetailResponse{
+		Data: TaskGetDetailResponseData{
 			Task: task,
 		},
 	})

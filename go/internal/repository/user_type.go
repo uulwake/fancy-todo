@@ -1,12 +1,12 @@
 package repository
 
-type CreateUserInput struct {
+type UserCreateInput struct {
 	Name string
 	Email string
 	Password string
 }
 
-type GetDetailUserInput struct {
+type UserGetDetailInput struct {
 	ID int64
 	Email string
 	Cols []string

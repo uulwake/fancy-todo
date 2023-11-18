@@ -101,7 +101,6 @@ export class TaskRepo implements ITaskRepo {
         "tasks.id",
         "tasks.user_id",
         "tasks.title",
-        "tasks.description",
         "tasks.status",
         "tasks.order",
         "tasks.created_at",

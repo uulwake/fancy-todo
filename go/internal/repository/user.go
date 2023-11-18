@@ -22,7 +22,7 @@ type UserRepo struct {
 	db *database.Db
 }
 
-func (ur *UserRepo) Create(ctx context.Context, data CreateUserInput) (int64, error) {
+func (ur *UserRepo) Create(ctx context.Context, data UserCreateInput) (int64, error) {
 	now := time.Now()
 
 	query, args := sqlbuilder.PostgreSQL.NewInsertBuilder().
@@ -41,7 +41,7 @@ func (ur *UserRepo) Create(ctx context.Context, data CreateUserInput) (int64, er
 	return userId, nil
 }
 
-func (ur *UserRepo) GetDetail(ctx context.Context, queryOption GetDetailUserInput) error {
+func (ur *UserRepo) GetDetail(ctx context.Context, queryOption UserGetDetailInput) error {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select(queryOption.Cols...).From("users").Limit(1)
 

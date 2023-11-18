@@ -3,8 +3,11 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fancy-todo/internal/constant"
 	"fancy-todo/internal/libs"
 	"fmt"
+	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -46,4 +49,54 @@ func GetUserIdFromContext(c echo.Context) (int64, error) {
 	default:
 		return 0, libs.DefaultInternalServerError(fmt.Errorf("invalid userID %v", userId))
 	}
+}
+
+func ConvertCommonQueryParam(c echo.Context) (libs.QueryParam, error) {
+	pageSizeStr := c.QueryParam("page_size")
+	pageNumberStr := c.QueryParam("page_number")
+	sortKey := c.QueryParam("sort_key")
+	sortOrder := c.QueryParam("sort_order")
+
+	var queryParam libs.QueryParam
+	var pageSize, pageNumber int
+	var err error
+
+	if pageSizeStr != "" {
+		pageSize, err = strconv.Atoi(pageSizeStr)
+		if err != nil {
+			return queryParam, libs.CustomError{
+				HTTPCode: http.StatusBadRequest,
+				Message: "invalid page size query",
+			}
+		}
+
+		if pageSize < constant.PAGE_SIZE_MIN || pageSize > constant.PAGE_SIZE_MAX {
+			pageSize = constant.PAGE_SIZE_DEFAULT
+		}
+	} else {
+		pageSize = constant.PAGE_SIZE_DEFAULT
+	} 
+
+	if pageNumberStr != "" {
+		pageNumber, err = strconv.Atoi(pageNumberStr)
+		if err != nil {
+			return queryParam, libs.CustomError{
+				HTTPCode: http.StatusBadRequest,
+				Message: "invalid page number query",
+			}
+		}
+
+		if pageNumber < constant.PAGE_NUMBER_MIN || pageNumber > constant.PAGE_NUMBER_MAX {
+			pageNumber = constant.PAGE_NUMBER_DEFAULT
+		}
+	} else {
+		pageNumber = constant.PAGE_NUMBER_DEFAULT
+	}
+
+	queryParam.PageNumber = pageNumber
+	queryParam.PageSize = pageSize
+	queryParam.SortKey = sortKey
+	queryParam.SortOrder = sortOrder
+
+	return queryParam, nil
 }

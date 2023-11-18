@@ -7,11 +7,13 @@ import (
 )
 
 type IUserRepo interface {
-	Create(ctx context.Context, data repository.CreateUserInput) (int64, error)
-	GetDetail(ctx context.Context, queryOption repository.GetDetailUserInput) error
+	Create(ctx context.Context, data repository.UserCreateInput) (int64, error)
+	GetDetail(ctx context.Context, queryOption repository.UserGetDetailInput) error
 }
 
 type ITaskRepo interface {
-	Create(ctx context.Context, data repository.TaskRepoCreateInput) (int64, error)
+	Create(ctx context.Context, data repository.TaskCreateInput) (int64, error)
 	GetDetail(ctx context.Context, userId int64, taskId int64) (model.Task, error)
+	GetLists(ctx context.Context, userId int64, query repository.TaskGetListsQuery) ([]model.Task, error)
+	GetTotal(ctx context.Context, userId int64, query repository.TaskGetTotalQuery) (int64, error)
 }

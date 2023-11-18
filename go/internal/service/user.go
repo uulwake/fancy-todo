@@ -40,7 +40,7 @@ func (us *UserService) CreateJwtToken(ctx context.Context, userId int64, email s
 	return stringToken, nil
 }
 
-func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInput) (int64, error) {
+func (us *UserService) Register(ctx context.Context, data UserRegisterInput) (int64, error) {
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(data.Password), us.env.Salt)
 	if err != nil {
 		return 0, libs.CustomError{
@@ -49,16 +49,16 @@ func (us *UserService) Register(ctx context.Context, data UserServiceRegisterInp
 		}
 	}
 
-	return us.userRepo.Create(ctx, repository.CreateUserInput{
+	return us.userRepo.Create(ctx, repository.UserCreateInput{
 		Name: data.Name,
 		Email: data.Email,
 		Password: string(hashedPwd),
 	})
 }
 
-func (us *UserService) Login(ctx context.Context, data UserServiceLoginInput) (int64, error) {
+func (us *UserService) Login(ctx context.Context, data UserLoginInput) (int64, error) {
 	var user model.User
-	err := us.userRepo.GetDetail(ctx, repository.GetDetailUserInput{
+	err := us.userRepo.GetDetail(ctx, repository.UserGetDetailInput{
 		Email: data.Email,
 		Cols: []string{"id", "email", "password"},
 		Values: []any{&user.ID, &user.Email, &user.Password},

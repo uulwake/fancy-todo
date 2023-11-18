@@ -36,7 +36,7 @@ func (uh *UserHandler) Register(c echo.Context) error {
 		return err
 	}
 
-	userId, err := uh.userService.Register(ctx, service.UserServiceRegisterInput{Name: body.Name, Email: body.Email, Password: body.Password})
+	userId, err := uh.userService.Register(ctx, service.UserRegisterInput{Name: body.Name, Email: body.Email, Password: body.Password})
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (uh *UserHandler) Login(c echo.Context) error {
 		return err
 	}
 
-	userId, err := uh.userService.Login(ctx, service.UserServiceLoginInput{
+	userId, err := uh.userService.Login(ctx, service.UserLoginInput{
 		Email: body.Email,
 		Password: body.Password,
 	})

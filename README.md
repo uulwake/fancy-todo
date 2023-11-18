@@ -113,7 +113,8 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
            "status": "on_going",
            "order": 1,
            "created_at": "2023-12-12 12:12:12",
-           "updated_at": "2023-12-12 12:12:12"
+           "updated_at": "2023-12-12 12:12:12",
+           "tags": [],
          }
        }
      }
@@ -124,9 +125,9 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
      - status: string. Ex: `?status=completed`
      - page_size: number. Ex: `?page_size=10`
      - page_number: number. Ex: `?page_number=2`
-     - tag_id: number, Ex: `tag_id=1`
-     - sort_name: string, Ex: `sort_key=title`
-     - sort_order: string, Ex: `sort_order=desc`
+     - tag_id: number, Ex: `?tag_id=1`
+     - sort_key: string, Ex: `?sort_key=title`
+     - sort_order: string, Ex: `?sort_order=desc`
    - Response:
      ```json
      {
@@ -138,7 +139,11 @@ Implement fancy todo API with 5 different languages such as Typescript, Go, Java
              "status": "on_going",
              "order": 1,
              "created_at": "2023-12-12 12:12:12",
-             "updated_at": "2023-12-12 12:12:12"
+             "updated_at": "2023-12-12 12:12:12",
+             "tags": [
+                { "id": 1, "name": "tag1" },
+                { "id": 2, "name": "tag2" },
+             ]
            }
          ]
        },

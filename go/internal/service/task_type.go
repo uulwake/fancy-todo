@@ -1,4 +1,6 @@
-package repository
+package service
+
+import "fancy-todo/internal/libs"
 
 type TaskCreateInput struct {
 	UserId int64
@@ -7,15 +9,12 @@ type TaskCreateInput struct {
 	TagIDs []int64
 }
 
-type TaskGetListsQuery struct {
-	Limit int
-	Offset int
-	SortBy string
-	SortOrder string
+type TaskGetListsQueryParam struct {
+	libs.QueryParam
 	Status string
 	TagId int64
 }
-type TaskGetTotalQuery struct {
+type TaskGetTotalQueryParam struct {
 	Status string
 	TagId int64
 }

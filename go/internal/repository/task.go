@@ -10,6 +10,8 @@ import (
 	"fancy-todo/internal/database"
 	"fancy-todo/internal/libs"
 	"fancy-todo/internal/model"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/huandu/go-sqlbuilder"
@@ -28,7 +30,7 @@ type TaskRepo struct {
 	db *database.Db
 }
 
-func (tr *TaskRepo) Create(ctx context.Context, data TaskRepoCreateInput) (int64, error) {
+func (tr *TaskRepo) Create(ctx context.Context, data TaskCreateInput) (int64, error) {
 	tx, err := tr.db.Pg.Begin()
 	if err != nil {
 		return 0, libs.DefaultInternalServerError(err)
@@ -100,6 +102,11 @@ func (tr *TaskRepo) Create(ctx context.Context, data TaskRepoCreateInput) (int64
 }
 
 func (tr *TaskRepo) getTagsByTaskId(ctx context.Context, taskIds []int64) (map[int64][]model.Tag, error) {
+	mapTagsByTaskId := make(map[int64][]model.Tag)
+	if len(taskIds) == 0 {
+		return mapTagsByTaskId, nil
+	}
+
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder().
 		Select("tags.id", "tags.name", "tasks_tags.task_id").
 		From("tags").
@@ -121,7 +128,6 @@ func (tr *TaskRepo) getTagsByTaskId(ctx context.Context, taskIds []int64) (map[i
 	}
 	defer rows.Close()
 	
-	mapTagsByTaskId := make(map[int64][]model.Tag)
 	for rows.Next() {
 		var tag model.Tag
 		var task model.Task
@@ -168,4 +174,104 @@ func (tr *TaskRepo) GetDetail(ctx context.Context, userId int64, taskId int64) (
 	}
 
 	return task, nil
+}
+
+func (tr *TaskRepo) GetLists(ctx context.Context, userId int64, queryParam TaskGetListsQuery) ([]model.Task, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+		
+	sb.Select(
+			"tasks.id",
+			"tasks.user_id",
+			"tasks.title",
+			"tasks.status",
+			"tasks.order",
+			"tasks.created_at",
+			"tasks.updated_at",
+		).
+		From("tasks").
+		Where(sb.Equal("tasks.user_id", userId)).
+		Limit(queryParam.Limit).
+		Offset(queryParam.Offset)
+
+	if queryParam.Status != "" {
+		sb.Where(sb.Equal("tasks.status", queryParam.Status))
+	}
+
+	if queryParam.SortBy != "" && queryParam.SortOrder != "" && libs.CheckValidSortOrder(queryParam.SortOrder) {
+		sb.OrderBy(fmt.Sprintf("%s %s", queryParam.SortBy, strings.ToUpper(queryParam.SortOrder)))
+	}
+
+	if (queryParam.TagId != 0) {
+		sb.JoinWithOption(sqlbuilder.LeftJoin, "tasks_tags", "tasks_tags.task_id = tasks.id")
+		sb.Where(sb.Equal("tasks_tags.tag_id", queryParam.TagId))
+	}
+
+	sb.OrderBy("tasks.order ASC NULLS LAST")
+	sb.OrderBy("tasks.id ASC")
+	
+	tasks := []model.Task{}
+	query, args := sb.Build()
+	fmt.Println(query, args)
+	rows, err := tr.db.Pg.Query(query, args...)
+	if err != nil {
+		return tasks, libs.DefaultInternalServerError(err)
+	}
+
+	for rows.Next() {
+		var task model.Task
+		err := rows.Scan(&task.ID, &task.UserID, &task.Title, &task.Status, &task.Order, &task.CreatedAt, &task.UpdatedAt)
+		if err != nil {
+			return tasks, libs.DefaultInternalServerError(err)
+		}
+
+		tasks = append(tasks, task)
+	}
+
+
+	taskIds := make([]int64, len(tasks))
+	for _, task := range tasks {
+		taskIds = append(taskIds, task.ID)
+	}
+
+	mapTagsByTaskId, err := tr.getTagsByTaskId(ctx, taskIds)
+	if err != nil {
+		return tasks, libs.DefaultInternalServerError(err)
+	}
+
+	for i, task := range tasks {
+		if tags, ok := mapTagsByTaskId[task.ID]; ok {
+			tasks[i].Tags = &tags
+		} else {
+			tasks[i].Tags = &[]model.Tag{}
+		}
+	}
+
+	return tasks, nil
+}
+
+func (tr *TaskRepo) GetTotal(ctx context.Context, userId int64, queryParam TaskGetTotalQuery) (int64, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+
+	sb.Select("COUNT(tasks.id)").
+		From("tasks").
+		Where(sb.Equal("tasks.user_id", userId))
+
+	if queryParam.Status != "" {
+		sb.Where(sb.Equal("tasks.status", queryParam.Status))
+	}
+
+	if (queryParam.TagId != 0) {
+		sb.JoinWithOption(sqlbuilder.LeftJoin, "tasks_tags", "tasks_tags.task_id = tasks.id")
+		sb.Where(sb.Equal("tasks_tags.tag_id", queryParam.TagId))
+	}
+
+
+	var total int64
+	query, args := sb.Build()
+	err := tr.db.Pg.QueryRow(query, args...).Scan(&total)
+	if err != nil {
+		return total, libs.DefaultInternalServerError(err)
+	}
+
+	return total, nil
 }
