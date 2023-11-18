@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fancy-todo/internal/config"
+	"fancy-todo/internal/model"
 	"fancy-todo/internal/repository"
 )
 
@@ -25,4 +26,8 @@ func (ts *TaskService) Create(ctx context.Context, data TaskServiceCreateInput) 
 		Description: data.Description,
 		TagIDs: data.TagIDs,
 	})
+}
+
+func (ts *TaskService) GetDetail(ctx context.Context, userId int64, taskId int64) (model.Task, error) {
+	return ts.taskRepo.GetDetail(ctx, userId, taskId)
 }

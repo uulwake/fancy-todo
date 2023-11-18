@@ -15,3 +15,10 @@ type TaskHandlerCreateResponseData struct {
 type TaskHandlerCreateResponse struct {
 	Data TaskHandlerCreateResponseData `json:"data"`
 }
+type TaskHandlerGetDetailResponseData struct {
+	Task model.Task `json:"task"`
+}
+
+type TaskHandlerGetDetailResponse struct {
+	Data TaskHandlerGetDetailResponseData `json:"data"`
+}

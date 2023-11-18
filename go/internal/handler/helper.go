@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fancy-todo/internal/libs"
-	"net/http"
+	"fmt"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -22,22 +22,28 @@ func CreateContext(c echo.Context) context.Context {
 func PreprocessedRequest(c echo.Context, validate *validator.Validate, body any) (context.Context, error) {
 	ctx := CreateContext(c)
 	
-	err := json.NewDecoder(c.Request().Body).Decode(&body)
-	if err != nil {
-		return ctx, libs.CustomError{
-			HTTPCode: http.StatusInternalServerError,
-			Message: err.Error(),
+	if body != nil {
+		err := json.NewDecoder(c.Request().Body).Decode(&body)
+		if err != nil {
+			return ctx, libs.DefaultInternalServerError(err)
 		}
-	}
-	
-	err = validate.Struct(body)
-	if err != nil {
-		return ctx, libs.CustomError{
-			HTTPCode: http.StatusBadRequest,
-			Message: err.Error(),
+		
+		err = validate.Struct(body)
+		if err != nil {
+			return ctx, libs.DefaultInternalServerError(err)
 		}
 	}
 
 	return ctx, nil
+}
 
+func GetUserIdFromContext(c echo.Context) (int64, error) {
+	userId := c.Get("user_id")
+
+	switch v := userId.(type) {
+	case int64:
+		return v, nil
+	default:
+		return 0, libs.DefaultInternalServerError(fmt.Errorf("invalid userID %v", userId))
+	}
 }

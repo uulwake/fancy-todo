@@ -31,4 +31,5 @@ require (
 	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
+	gopkg.in/guregu/null.v4 v4.0.0 // indirect
 )

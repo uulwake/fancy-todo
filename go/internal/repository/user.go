@@ -5,7 +5,6 @@ import (
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/database"
 	"fancy-todo/internal/libs"
-	"net/http"
 	"time"
 
 	"github.com/huandu/go-sqlbuilder"
@@ -26,8 +25,7 @@ type UserRepo struct {
 func (ur *UserRepo) Create(ctx context.Context, data CreateUserInput) (int64, error) {
 	now := time.Now()
 
-	sb := sqlbuilder.PostgreSQL.NewInsertBuilder()
-	query, args := sb.
+	query, args := sqlbuilder.PostgreSQL.NewInsertBuilder().
 		InsertInto("users").
 		Cols("name", "email", "password", "created_at", "updated_at").
 		Values(data.Name, data.Email, data.Password, now, now).
@@ -37,10 +35,7 @@ func (ur *UserRepo) Create(ctx context.Context, data CreateUserInput) (int64, er
 	var userId int64
 	err := ur.db.Pg.QueryRow(query, args...).Scan(&userId)
 	if err != nil {
-		return 0, libs.CustomError{
-			HTTPCode: http.StatusInternalServerError,
-			Message: err.Error(),
-		}
+		return 0, libs.DefaultInternalServerError(err)
 	}
 
 	return userId, nil
@@ -62,10 +57,7 @@ func (ur *UserRepo) GetDetail(ctx context.Context, queryOption GetDetailUserInpu
 	
 	err := ur.db.Pg.QueryRow(query, args...).Scan(queryOption.Values...)
 	if err != nil {
-		return libs.CustomError{
-			HTTPCode: http.StatusInternalServerError,
-			Message: err.Error(),
-		}
+		return libs.DefaultInternalServerError(err)
 	}
 
 	return nil

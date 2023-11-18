@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fancy-todo/internal/model"
 	"fancy-todo/internal/service"
 )
 
@@ -13,4 +14,5 @@ type IUserService interface {
 
 type ITaskService interface {
 	Create(ctx context.Context, data service.TaskServiceCreateInput) (int64, error)
+	GetDetail(ctx context.Context, userId int64, taskId int64) (model.Task, error)
 }
