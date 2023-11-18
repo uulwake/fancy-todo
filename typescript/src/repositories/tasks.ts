@@ -125,7 +125,9 @@ export class TaskRepo implements ITaskRepo {
       query.orderBy(queryParam.sort_key, queryParam.sort_order);
     }
 
-    const tasks = await query.orderBy("tasks.id", "desc");
+    query.orderByRaw(`tasks."order" ASC NULLS LAST`)
+    query.orderBy("tasks.id", "ASC")
+    const tasks = await query;
 
     const mapTagByTaskId = await this.getTagsByTaskId(
       ctx,
