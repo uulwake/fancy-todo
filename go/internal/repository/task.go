@@ -215,6 +215,7 @@ func (tr *TaskRepo) GetLists(ctx context.Context, userId int64, queryParam TaskG
 	if err != nil {
 		return tasks, libs.DefaultInternalServerError(err)
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var task model.Task
