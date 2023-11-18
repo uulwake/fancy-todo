@@ -211,7 +211,6 @@ func (tr *TaskRepo) GetLists(ctx context.Context, userId int64, queryParam TaskG
 	
 	tasks := []model.Task{}
 	query, args := sb.Build()
-	fmt.Println(query, args)
 	rows, err := tr.db.Pg.Query(query, args...)
 	if err != nil {
 		return tasks, libs.DefaultInternalServerError(err)
