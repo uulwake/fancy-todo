@@ -73,12 +73,12 @@ func (tr *TaskRepo) Create(ctx context.Context, data TaskRepoCreateInput) (int64
 		ID: taskId,
 		UserID: data.UserId,
 		Title: data.Title,
-		Description: null.String{
+		Description: &null.String{
 			NullString: sql.NullString{String: data.Description, Valid: true},
 		},
 		Status: constant.TASK_STATUS_ON_GOING,
-		CreatedAt: now,
-		UpdatedAt: now,
+		CreatedAt: &now,
+		UpdatedAt: &now,
 	}
 	
 	taskJson, err := json.Marshal(task)
@@ -124,16 +124,16 @@ func (tr *TaskRepo) getTagsByTaskId(ctx context.Context, taskIds []int64) (map[i
 	mapTagsByTaskId := make(map[int64][]model.Tag)
 	for rows.Next() {
 		var tag model.Tag
-		err := rows.Scan(&tag.ID, &tag.Name, &tag.Task.ID)
+		var task model.Task
+		err := rows.Scan(&tag.ID, &tag.Name, &task.ID)
 		if err != nil {
 			return nil, libs.DefaultInternalServerError(err)
 		}
-
-		_, ok := mapTagsByTaskId[tag.Task.ID]
+		_, ok := mapTagsByTaskId[task.ID]
 		if !ok {
-			mapTagsByTaskId[tag.Task.ID] = []model.Tag{tag}
+			mapTagsByTaskId[task.ID] = []model.Tag{tag}
 		} else {
-			mapTagsByTaskId[tag.Task.ID] = append(mapTagsByTaskId[tag.Task.ID], tag)
+			mapTagsByTaskId[task.ID] = append(mapTagsByTaskId[task.ID], tag)
 		}
 	}
 
@@ -162,7 +162,9 @@ func (tr *TaskRepo) GetDetail(ctx context.Context, userId int64, taskId int64) (
 	}
 
 	if tags, ok := mapTagByTaskId[taskId]; ok {
-		task.Tags = tags
+		task.Tags = &tags
+	} else {
+		task.Tags = &[]model.Tag{}
 	}
 
 	return task, nil
