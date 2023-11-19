@@ -150,7 +150,7 @@ describe("Task & Tag Test", () => {
       });
     });
 
-    describe.only("Search", () => {
+    describe("Search", () => {
       let taskIds;
       let tagIds;
       beforeEach(async () => {
@@ -203,7 +203,7 @@ describe("Task & Tag Test", () => {
         await Promise.all([...promiseTasks, ...promiseTags]);
       });
 
-      it.only("Should search tasks and tags", async () => {
+      it("Should search tasks and tags", async () => {
         await delay(2e3); // wait for ES
 
         let { data } = await axios({
@@ -227,6 +227,151 @@ describe("Task & Tag Test", () => {
         expect(tagIds.includes(data.data.tags[1].id));
         expect(["wxy", "xyz"].includes(data.data.tags[0].name));
         expect(["wxy", "xyz"].includes(data.data.tags[1].name));
+      });
+    });
+
+    describe("Update", () => {
+      it("Should update task", async () => {
+        await delay(2e3); // wait for ES
+
+        await axios({
+          url: "http://localhost:3001/v1/tasks/" + taskId,
+          method: "PATCH",
+          headers: { "jwt-token": jwtToken },
+          data: {
+            title: "titlexyz",
+            description: "descriptionxyz",
+            status: "completed",
+            order: 1,
+          },
+        });
+        await delay(2e3); // wait for ES
+
+        let { data } = await axios({
+          url: "http://localhost:3001/v1/tasks/" + taskId,
+          method: "GET",
+          headers: { "jwt-token": jwtToken },
+        });
+
+        expect(data.data.task.title).toEqual("titlexyz");
+        expect(data.data.task.description).toEqual("descriptionxyz");
+        expect(data.data.task.status).toEqual("completed");
+        expect(data.data.task.order).toEqual(1);
+
+        ({ data } = await axios({
+          url: "http://localhost:3001/v1/tasks/search",
+          params: { title: "titlexyz" },
+          method: "GET",
+          headers: { "jwt-token": jwtToken },
+        }));
+
+        expect(data.data.tasks.length).toEqual(1);
+        expect(data.data.tasks[0].title).toEqual("titlexyz");
+        expect(data.data.tasks[0].status).toEqual("completed");
+      });
+
+      it("Should add tag to existing task", async () => {
+        let { data } = await axios({
+          url: "http://localhost:3001/v1/tasks",
+          method: "POST",
+          headers: { "jwt-token": jwtToken },
+          data: {
+            title: "title_" + now,
+            description: "description_" + now,
+          },
+        });
+        const taskId = data.data.task.id;
+
+        ({ data } = await axios({
+          url: "http://localhost:3001/v1/tags",
+          method: "POST",
+          headers: { "jwt-token": jwtToken },
+          data: {
+            name: "name_" + now,
+          },
+        }));
+        const tagId = data.data.tag.id;
+
+        await axios({
+          url: `http://localhost:3001/v1/tags/${tagId}/tasks/${taskId}`,
+          method: "PATCH",
+          headers: { "jwt-token": jwtToken },
+        });
+
+        ({ data } = await axios({
+          url: "http://localhost:3001/v1/tasks/" + taskId,
+          method: "GET",
+          headers: { "jwt-token": jwtToken },
+        }));
+        expect(data.data.task.tags[0].id).toEqual(tagId);
+      });
+    });
+
+    describe("Delete", () => {
+      it("Should delete task", async () => {
+        let { data } = await axios({
+          url: "http://localhost:3001/v1/tasks",
+          method: "POST",
+          headers: { "jwt-token": jwtToken },
+          data: {
+            title: "delete_title",
+          },
+        });
+        const taskId = data.data.task.id;
+        await delay(2e3);
+
+        await axios({
+          url: "http://localhost:3001/v1/tasks/" + taskId,
+          method: "DELETE",
+          headers: { "jwt-token": jwtToken },
+        });
+        await delay(2e3);
+
+        ({ data } = await axios({
+          url: "http://localhost:3001/v1/tasks/" + taskId,
+          method: "GET",
+          headers: { "jwt-token": jwtToken },
+        }));
+
+        expect(data.data.task).toEqual(null);
+
+        ({ data } = await axios({
+          url: "http://localhost:3001/v1/tasks/search",
+          params: { title: "delete_title" },
+          method: "GET",
+          headers: { "jwt-token": jwtToken },
+        }));
+
+        expect(data.data.tasks.length).toEqual(0);
+      });
+
+      it("Should delete tag", async () => {
+        let { data } = await axios({
+          url: "http://localhost:3001/v1/tags",
+          method: "POST",
+          headers: { "jwt-token": jwtToken },
+          data: {
+            name: "delete_tag",
+          },
+        });
+        const tagId = data.data.tag.id;
+        await delay(2e3);
+
+        await axios({
+          url: "http://localhost:3001/v1/tags/" + tagId,
+          method: "DELETE",
+          headers: { "jwt-token": jwtToken },
+        });
+        await delay(2e3);
+
+        ({ data } = await axios({
+          url: "http://localhost:3001/v1/tags/search",
+          params: { name: "delete_tag" },
+          method: "GET",
+          headers: { "jwt-token": jwtToken },
+        }));
+
+        expect(data.data.tags.length).toEqual(0);
       });
     });
   });
