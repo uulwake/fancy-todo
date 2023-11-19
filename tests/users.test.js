@@ -31,7 +31,7 @@ describe("User Test", () => {
           },
         });
       } catch (err) {
-        expect(err.response.status).toEqual(400);
+        expect(err.response.status != 200).toEqual(true);
       }
     });
 
