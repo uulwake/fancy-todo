@@ -227,7 +227,7 @@
 
 3. Delete Tag
 
-   - Endpoint: `DELETE /v1/tags/tag_id`
+   - Endpoint: `DELETE /v1/tags/:tag_id`
    - Response:
      ```json
      {
