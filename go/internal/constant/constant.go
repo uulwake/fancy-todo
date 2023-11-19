@@ -7,6 +7,7 @@ const (
 
 const (
 	ES_INDEX_TASKS = "tasks"
+	ES_INDEX_TAGS = "tags"
 )
 
 const (

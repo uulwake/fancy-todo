@@ -20,3 +20,7 @@ type ITaskRepo interface {
 	UpdateById(ctx context.Context, userId int64, taskId int64, task repository.TaskUpdateByIdInput) error
 	DeleteById(ctx context.Context, userId int64, taskId int64) error 
 }
+
+type ITagRepo interface {
+	Create(ctx context.Context, data repository.TagCreateData) (int64, error)
+}

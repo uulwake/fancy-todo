@@ -41,31 +41,28 @@ func (tr *TaskRepo) Create(ctx context.Context, data TaskCreateInput) (int64, er
 	var taskId int64
 	now := time.Now()
 	
-	taskQuery, taskArgs := sqlbuilder.PostgreSQL.
-		NewInsertBuilder().
-		InsertInto("tasks").
+	ib := sqlbuilder.PostgreSQL.NewInsertBuilder()
+	query, args := ib.InsertInto("tasks").
 		Cols("user_id", "title", "description", "status", "created_at", "updated_at").
 		Values(data.UserId, data.Title, data.Description,  constant.TASK_STATUS_ON_GOING,now, now).
 		SQL("RETURNING id").
 		Build()
 
-	err = tx.QueryRow(taskQuery, taskArgs...).Scan(&taskId)
+	err = tx.QueryRow(query, args...).Scan(&taskId)
 	if err != nil {
 		return 0, libs.DefaultInternalServerError(err)
 	}
 
 	if len(data.TagIDs) > 0 {
-		sb := sqlbuilder.PostgreSQL.
-			NewInsertBuilder().
-			InsertInto("tasks_tags").
-			Cols("task_id", "tag_id", "created_at", "updated_at")
+		ib := sqlbuilder.PostgreSQL.NewInsertBuilder()
+		ib.InsertInto("tasks_tags").Cols("task_id", "tag_id", "created_at", "updated_at")
 
 		for _, tagId := range data.TagIDs {
-			sb.Values(taskId, tagId, now, now)
+			ib.Values(taskId, tagId, now, now)
 		}
 
-		tagQuery, tagArgs := sb.Build()
-		_, err = tx.Exec(tagQuery, tagArgs...)
+		query, args := ib.Build()
+		_, err = tx.Exec(query, args...)
 		if err != nil {
 			return 0, libs.DefaultInternalServerError(err)
 		}
@@ -84,12 +81,13 @@ func (tr *TaskRepo) Create(ctx context.Context, data TaskCreateInput) (int64, er
 		UpdatedAt: &now,
 	}
 	
-	taskJson, err := json.Marshal(task)
+	var taskJson bytes.Buffer
+	err = json.NewEncoder(&taskJson).Encode(&task)
 	if err != nil {
 		return 0, libs.DefaultInternalServerError(err)
 	}
 
-	_, err = tr.db.Es.Index(constant.ES_INDEX_TASKS, bytes.NewReader(taskJson))
+	_, err = tr.db.Es.Index(constant.ES_INDEX_TASKS, &taskJson)
 	if err != nil {
 		return 0, libs.DefaultInternalServerError(err)
 	}

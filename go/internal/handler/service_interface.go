@@ -21,3 +21,7 @@ type ITaskService interface {
 	UpdateById(ctx context.Context, userId int64, taskId int64, task service.TaskUpdateByIdInput) error
 	DeleteById(ctx context.Context, userId int64, taskId int64) error
 }
+
+type ITagService interface {
+	Create(ctx context.Context, data service.TagCreateData) (int64, error)
+}

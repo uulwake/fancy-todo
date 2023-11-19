@@ -28,10 +28,12 @@ func main() {
 	// repository
 	userRepo := repository.NewUserRepo(env, db)
 	taskRepo := repository.NewTaskRepo(env, db)
+	tagRepo := repository.NewTagRepo(env, db)
 
 	// service
 	userService := service.NewUserService(env, userRepo)
 	taskService := service.NewTaskService(env, taskRepo)
+	tagService := service.NewTagService(env, tagRepo)
 
 	// handler
 	e := echo.New()
@@ -49,6 +51,7 @@ func main() {
 	v1Group := e.Group("/v1")
 	handler.InitUserHandler(v1Group.Group("/users"), env, validate, userService)
 	handler.InitTaskHandler(v1Group.Group("/tasks"), env, validate, taskService)
+	handler.InitTagHandler(v1Group.Group("/tags"), env, validate, tagService)
 
 	e.Logger.Fatal(e.Start(":3001"))
 }
