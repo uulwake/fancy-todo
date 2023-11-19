@@ -267,7 +267,7 @@ export class TaskRepo implements ITaskRepo {
         .where("user_id", userId)
         .where("id", taskId);
 
-      const res = await this.db.es.updateByQuery({
+      await this.db.es.updateByQuery({
         index: ES_INDEX.TASKS,
         query: {
           bool: {
@@ -279,7 +279,6 @@ export class TaskRepo implements ITaskRepo {
           source: esSources.join(";"),
         },
       });
-      console.log(res);
 
       await tx.commit();
     } catch (err) {
