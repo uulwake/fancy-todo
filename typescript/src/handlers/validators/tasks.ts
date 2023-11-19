@@ -17,6 +17,7 @@ export const taskValidators: TaskHandlerValidatorType = {
       .withMessage("description is not string")
       .bail(),
     body("tag_ids")
+      .optional()
       .notEmpty()
       .withMessage("tag_ids is empty")
       .bail()

@@ -17,7 +17,7 @@ export class TaskRepo implements ITaskRepo {
   async createTask(
     ctx: Context,
     data: Omit<TaskModel, "id" | "order">,
-    tagIds: number[]
+    tagIds: number[] = []
   ): Promise<number> {
     const tx = await this.db.pg.transaction();
 
