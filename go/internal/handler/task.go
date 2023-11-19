@@ -173,7 +173,28 @@ func (th *TaskHandler) GetLists(c echo.Context) error {
 }
 
 func (th *TaskHandler) Search(c echo.Context) error {
-	return nil
+	ctx, err := PreprocessedRequest(c, th.validate, nil)
+	if err != nil {
+		return err
+	}
+
+	userId, err := GetUserIdFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	title := c.QueryParam("title")
+
+	tasks, err := th.taskService.Search(ctx, userId, title)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, TaskSearchResponse{
+		Data: TaskSearchData{
+			Tasks: tasks,
+		},
+	})
 }
 
 func (th *TaskHandler) GetDetailById(c echo.Context) error {

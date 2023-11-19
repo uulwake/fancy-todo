@@ -11,6 +11,7 @@ import (
 	"fancy-todo/internal/libs"
 	"fancy-todo/internal/model"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -274,4 +275,67 @@ func (tr *TaskRepo) GetTotal(ctx context.Context, userId int64, queryParam TaskG
 	}
 
 	return total, nil
+}
+
+func (tr *TaskRepo) Search(ctx context.Context, userId int64, title string) ([]model.Task, error) {
+	tasks := []model.Task{}
+
+	body := map[string]any{
+		"query": map[string]any {
+			"bool": map[string]any{
+				"must": map[string]any{
+					"match": map[string]int64 {
+						"user_id": userId,
+					},
+				},
+				"filter": map[string]any {
+					"wildcard": map[string]any {
+						"title": map[string]any {
+							"value": fmt.Sprintf("*%s*", title),
+							"case_insensitive": true,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var bodyJson bytes.Buffer
+	err := json.NewEncoder(&bodyJson).Encode(body)
+	if err != nil {
+		return tasks, libs.DefaultInternalServerError(err)
+	}
+
+	response, err := tr.db.Es.Search(
+		tr.db.Es.Search.WithIndex(constant.ES_INDEX_TASKS),
+		tr.db.Es.Search.WithBody(&bodyJson),
+	)
+	if err != nil {
+		return tasks, libs.DefaultInternalServerError(err)
+	}
+
+	result := make(map[string]any)
+	json.NewDecoder(response.Body).Decode(&result)
+
+	hits, ok := result["hits"].(map[string]any)["hits"]
+	if !ok {
+		return tasks, libs.CustomError{
+			HTTPCode: http.StatusInternalServerError,
+			Message: "invalid es response",
+		}
+	}
+
+	for _, hit := range hits.([]any) {
+		task := model.Task{}
+		source := hit.(map[string]any)["_source"].(map[string]any)
+
+		task.ID = int64(source["id"].(float64))
+		task.UserID = int64(source["user_id"].(float64))
+		task.Title = source["title"].(string)
+		task.Status = source["status"].(string)
+
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
 }

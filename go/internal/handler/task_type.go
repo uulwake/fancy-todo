@@ -43,3 +43,11 @@ type TaskGetListsResponse struct {
 	Data TaskGetListData `json:"data"`
 	Page libs.Pagination `json:"page"`
 }
+
+type TaskSearchData struct {
+	Tasks []model.Task `json:"tasks"` 
+}
+
+type TaskSearchResponse struct {
+	Data TaskSearchData `json:"data"`
+}

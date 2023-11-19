@@ -49,3 +49,7 @@ func (ts *TaskService) GetTotal(ctx context.Context, userId int64, queryParam Ta
 		TagId: queryParam.TagId,
 	})
 }
+
+func (ts *TaskService) Search(ctx context.Context, userId int64, title string) ([]model.Task, error) {
+	return ts.taskRepo.Search(ctx, userId, title)
+}
