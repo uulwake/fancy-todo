@@ -369,7 +369,7 @@ func (tr *TaskRepo) UpdateById(ctx context.Context, userId int64, taskId int64, 
 
 	if task.Status != "" {
 		ub.SetMore(ub.Assign("status", task.Status))
-		esSources = append(esSources, fmt.Sprintf("ctx_.source.status = '%s'", task.Status))
+		esSources = append(esSources, fmt.Sprintf("ctx._source.status = '%s'", task.Status))
 	}
 
 	if task.Order != 0 {

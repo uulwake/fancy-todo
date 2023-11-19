@@ -45,7 +45,6 @@ func (tr *TagRepo) Create(ctx context.Context, data TagCreateData) (int64, error
 		SQL("RETURNING id").
 		Build()
 
-	fmt.Println(query, args)
 	err = tx.QueryRow(query, args...).Scan(&tagId)
 	if err != nil {
 		return 0, libs.DefaultInternalServerError(err)
@@ -82,7 +81,6 @@ func (tr *TagRepo) Create(ctx context.Context, data TagCreateData) (int64, error
 	if err != nil {
 		return 0, libs.DefaultInternalServerError(err)
 	}
-	fmt.Println(response)
 	if response.StatusCode != http.StatusCreated {
 		return 0, libs.CustomError{
 			HTTPCode: http.StatusBadRequest,
