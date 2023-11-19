@@ -97,3 +97,59 @@ func (tr *TagRepo) Create(ctx context.Context, data TagCreateData) (int64, error
 
 	return tagId, nil
 }
+
+func (tr *TagRepo) AddExistingTagToTask(ctx context.Context, userId int64, tagId int64, taskId int64) error {
+	now := time.Now()
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	query, args := sb.
+		Select("COUNT(id)").
+		From("tasks").
+		Where(sb.Equal("id", taskId), sb.Equal("user_id", userId)).
+		Build()
+
+	var totalTask int
+	err := tr.db.Pg.QueryRow(query, args...).Scan(&totalTask)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	if totalTask != 1 {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: fmt.Sprintf("user ID: %d does not have task ID: %d", userId, taskId),
+		}
+	}
+
+	sb = sqlbuilder.PostgreSQL.NewSelectBuilder()
+	query, args = sb.
+		Select("COUNT(id)").
+		From("tags").
+		Where(sb.Equal("id", taskId), sb.Equal("user_id", userId)).
+		Build()
+
+	var totalTag int
+	err = tr.db.Pg.QueryRow(query, args...).Scan(&totalTag)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	if totalTask != 1 {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: fmt.Sprintf("user ID: %d does not have tag ID: %d", userId, tagId),
+		}
+	}
+	
+	ib := sqlbuilder.PostgreSQL.NewInsertBuilder()
+	query, args = ib.InsertInto("tasks_tags").
+		Cols("task_id", "tag_id", "created_at", "updated_at").
+		Values(taskId, tagId, now, now).
+		Build()
+
+	_, err = tr.db.Pg.Exec(query, args...)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	return nil
+}

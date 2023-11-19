@@ -14,3 +14,11 @@ type TagCreateResponse struct {
 type TagCreateData struct {
 	Tag model.Tag `json:"tag"`
 }
+
+type TagAddExistingToTaskResponse struct {
+	Data TagAddExistingToTaskData `json:"data"`
+}
+
+type TagAddExistingToTaskData struct {
+	Tag model.Tag `json:"tag"`
+}

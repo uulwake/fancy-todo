@@ -23,4 +23,5 @@ type ITaskRepo interface {
 
 type ITagRepo interface {
 	Create(ctx context.Context, data repository.TagCreateData) (int64, error)
+	AddExistingTagToTask(ctx context.Context, userId int64, tagId int64, taskId int64) error
 }

@@ -25,3 +25,7 @@ func (ts *TagService) Create(ctx context.Context, data TagCreateData) (int64, er
 		UserId: data.UserId,
 	})
 }
+
+func (ts *TagService) AddExistingTagToTask(ctx context.Context, userId int64, tagId int64, taskId int64) error {
+	return ts.tagRepo.AddExistingTagToTask(ctx, userId, tagId, taskId)
+}

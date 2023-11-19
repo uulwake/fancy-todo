@@ -24,4 +24,5 @@ type ITaskService interface {
 
 type ITagService interface {
 	Create(ctx context.Context, data service.TagCreateData) (int64, error)
+	AddExistingTagToTask(ctx context.Context, userId int64, tagId int64, taskId int64) error
 }

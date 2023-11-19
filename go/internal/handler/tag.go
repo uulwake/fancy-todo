@@ -3,9 +3,12 @@ package handler
 import (
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/handler/internal/middleware"
+	"fancy-todo/internal/libs"
 	"fancy-todo/internal/model"
 	"fancy-todo/internal/service"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -65,7 +68,49 @@ func (th *TagHandler) Create(c echo.Context) error {
 }
 
 func (th *TagHandler) AddExistingTagToTask(c echo.Context) error {
-	return nil
+	ctx, err := PreprocessedRequest(c, th.validate, nil)
+	if err != nil {
+		return err
+	}
+
+	userId, err := GetUserIdFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	taskIdParam := c.Param("taskId")
+	taskId, err := strconv.ParseInt(taskIdParam, 10, 64)
+	if err != nil {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
+		}
+	}
+
+	tagIdParam := c.Param("tagId")
+	tagId, err := strconv.ParseInt(tagIdParam, 10, 64)
+	if err != nil {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
+		}
+	}
+
+	err = th.tagService.AddExistingTagToTask(ctx, userId, tagId, taskId)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, TagAddExistingToTaskResponse{
+		Data: TagAddExistingToTaskData{
+			Tag: model.Tag{
+				ID: tagId,
+				Task: &model.Task{
+					ID: taskId,
+				},
+			},
+		},
+	})
 }
 
 func (th *TagHandler) Search(c echo.Context) error {
