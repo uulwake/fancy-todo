@@ -63,6 +63,7 @@ export class TagHandler extends BaseHandler {
 
       await this.service.tagService.addExistingTagToTask(
         createContext(req),
+        getUserId(req),
         tagId,
         taskId
       );

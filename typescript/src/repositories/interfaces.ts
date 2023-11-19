@@ -58,7 +58,11 @@ export interface ITagRepo {
     data: Omit<TagModel, "id">,
     taskId?: number
   ): Promise<number>;
-  addExistingTagToTask(ctx: Context, data: TaskTagModel): Promise<void>;
+  addExistingTagToTask(
+    ctx: Context,
+    userId: number,
+    data: TaskTagModel
+  ): Promise<void>;
   searchTag(
     ctx: Context,
     userId: number,

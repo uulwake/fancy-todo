@@ -27,9 +27,14 @@ export class TagService implements ITagService {
     return this.repo.tagRepo.createTag(ctx, data, body.task_id);
   }
 
-  async addExistingTagToTask(ctx: Context, tagId: number, taskId: number) {
+  async addExistingTagToTask(
+    ctx: Context,
+    userId: number,
+    tagId: number,
+    taskId: number
+  ) {
     const now = new Date();
-    await this.repo.tagRepo.addExistingTagToTask(ctx, {
+    await this.repo.tagRepo.addExistingTagToTask(ctx, userId, {
       tag_id: tagId,
       task_id: taskId,
       created_at: now,

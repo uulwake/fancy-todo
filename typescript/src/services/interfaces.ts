@@ -58,6 +58,7 @@ export interface ITagService {
   ): Promise<number>;
   addExistingTagToTask(
     ctx: Context,
+    userId: number,
     tagId: number,
     taskId: number
   ): Promise<void>;

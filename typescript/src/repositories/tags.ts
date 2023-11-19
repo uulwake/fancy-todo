@@ -48,7 +48,37 @@ export class TagRepo implements ITagRepo {
     }
   }
 
-  async addExistingTagToTask(ctx: Context, data: TaskTagModel): Promise<void> {
+  async addExistingTagToTask(
+    ctx: Context,
+    userId: number,
+    data: TaskTagModel
+  ): Promise<void> {
+    let res = (await this.db
+      .pg("tasks")
+      .count("id as total")
+      .where("id", data.task_id)
+      .where("user_id", userId)
+      .first()) as any as { total: number };
+
+    if (res.total != 1) {
+      throw new Error(
+        `user ID: ${userId} does not have task ID: ${data.task_id}`
+      );
+    }
+
+    res = (await this.db
+      .pg("tags")
+      .count("id as total")
+      .where("id", data.tag_id)
+      .where("user_id", userId)
+      .first()) as any as { total: number };
+
+    if (res.total != 1) {
+      throw new Error(
+        `user ID: ${userId} does not have tag ID: ${data.tag_id}`
+      );
+    }
+
     await this.db.pg<TaskTagModel>("tasks_tags").insert(data);
   }
 
