@@ -479,7 +479,6 @@ func (tr *TaskRepo) DeleteById(ctx context.Context, userId int64, taskId int64) 
 	}
 
 	if response.StatusCode != http.StatusOK {
-		fmt.Println(response)
 		return libs.CustomError{
 			HTTPCode: http.StatusBadRequest,
 			Message: "error deleting data to ElasticSearch",
