@@ -10,6 +10,7 @@ import (
 	"fancy-todo/internal/libs"
 	"fancy-todo/internal/model"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/huandu/go-sqlbuilder"
@@ -77,9 +78,16 @@ func (tr *TagRepo) Create(ctx context.Context, data TagCreateData) (int64, error
 		return 0, libs.DefaultInternalServerError(err)
 	}
 
-	_, err = tr.db.Es.Index(constant.ES_INDEX_TAGS, &tagJson)
+	response, err := tr.db.Es.Index(constant.ES_INDEX_TAGS, &tagJson)
 	if err != nil {
 		return 0, libs.DefaultInternalServerError(err)
+	}
+	fmt.Println(response)
+	if response.StatusCode != http.StatusCreated {
+		return 0, libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "error inserting data to ElasticSearch",
+		}
 	}
 
 	err = tx.Commit()

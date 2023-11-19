@@ -87,9 +87,15 @@ func (tr *TaskRepo) Create(ctx context.Context, data TaskCreateInput) (int64, er
 		return 0, libs.DefaultInternalServerError(err)
 	}
 
-	_, err = tr.db.Es.Index(constant.ES_INDEX_TASKS, &taskJson)
+	response, err := tr.db.Es.Index(constant.ES_INDEX_TASKS, &taskJson)
 	if err != nil {
 		return 0, libs.DefaultInternalServerError(err)
+	}
+	if response.StatusCode != http.StatusCreated {
+		return 0, libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "error inserting data to ElasticSearch",
+		}
 	}
 
 	err = tx.Commit()
