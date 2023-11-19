@@ -232,6 +232,7 @@ export class TaskRepo implements ITaskRepo {
     data: Partial<Pick<TaskModel, "title" | "description" | "status" | "order">>
   ) {
     const tx = await this.db.pg.transaction();
+
     try {
       const esSources = [];
       const updatedData: Partial<TaskModel> = {};
@@ -261,7 +262,7 @@ export class TaskRepo implements ITaskRepo {
         esSources.push(`ctx._source.order = ${data.order}`);
       }
 
-      await tx<TaskModel>("tasks")
+      await tx("tasks")
         .update(updatedData)
         .where("user_id", userId)
         .where("id", taskId);
@@ -292,12 +293,9 @@ export class TaskRepo implements ITaskRepo {
     taskId: number
   ): Promise<void> {
     const tx = await this.db.pg.transaction();
+
     try {
-      await this.db
-        .pg<TaskModel>("tasks")
-        .delete()
-        .where("id", taskId)
-        .where("user_id", userId);
+      await tx("tasks").delete().where("id", taskId).where("user_id", userId);
 
       await this.db.es.deleteByQuery({
         index: ES_INDEX.TASKS,
@@ -307,6 +305,7 @@ export class TaskRepo implements ITaskRepo {
           },
         },
       });
+
       await tx.commit();
     } catch (err) {
       await tx.rollback();

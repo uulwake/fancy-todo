@@ -123,6 +123,7 @@ export class TagRepo implements ITagRepo {
 
   async deleteTag(ctx: Context, userId: number, tagId: number): Promise<void> {
     const tx = await this.db.pg.transaction();
+
     try {
       await tx("tags").delete().where("user_id", userId).where("id", tagId);
 
@@ -134,6 +135,7 @@ export class TagRepo implements ITagRepo {
           },
         },
       });
+
       await tx.commit();
     } catch (err) {
       await tx.rollback();
