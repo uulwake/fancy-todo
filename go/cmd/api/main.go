@@ -7,6 +7,7 @@ import (
 	"fancy-todo/internal/repository"
 	"fancy-todo/internal/service"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -37,6 +38,9 @@ func main() {
 
 	// handler
 	e := echo.New()
+	e.GET("/hc", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, struct{ Status string `json:"status"`}{Status: "ok"})
+	})
 
 	e.Use(middleware.RequestID())
 	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
@@ -53,5 +57,6 @@ func main() {
 	handler.InitTaskHandler(v1Group.Group("/tasks"), env, validate, taskService)
 	handler.InitTagHandler(v1Group.Group("/tags"), env, validate, tagService)
 
+	// run
 	e.Logger.Fatal(e.Start(":3001"))
 }

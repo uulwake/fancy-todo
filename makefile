@@ -34,3 +34,10 @@ ts\:build:
 
 ts\:run:
 	make db:up && docker compose up -d ts
+
+# go
+go\:build:
+	docker compose build go
+
+go\:run:
+	make db:up && docker compose up -d go
