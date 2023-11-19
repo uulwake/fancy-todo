@@ -3,8 +3,11 @@ package service
 import (
 	"context"
 	"fancy-todo/internal/config"
+	"fancy-todo/internal/constant"
+	"fancy-todo/internal/libs"
 	"fancy-todo/internal/model"
 	"fancy-todo/internal/repository"
+	"net/http"
 )
 
 func NewTaskService(env *config.Env, taskRepo ITaskRepo) *TaskService {
@@ -52,4 +55,27 @@ func (ts *TaskService) GetTotal(ctx context.Context, userId int64, queryParam Ta
 
 func (ts *TaskService) Search(ctx context.Context, userId int64, title string) ([]model.Task, error) {
 	return ts.taskRepo.Search(ctx, userId, title)
+}
+
+func (ts *TaskService) UpdateById(ctx context.Context, userId int64, taskId int64, task TaskUpdateByIdInput) error {
+	if task.Status != "" && task.Status != constant.TASK_STATUS_ON_GOING && task.Status != constant.TASK_STATUS_COMPLETED {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "invalid status",
+		}
+	}
+
+	if task.Order < 0 {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "invalid order",
+		}
+	}
+	
+	return ts.taskRepo.UpdateById(ctx, userId, taskId, repository.TaskUpdateByIdInput{
+		Title: task.Title,
+		Description: task.Description,
+		Status: task.Status,
+		Order: task.Order,
+	})
 }

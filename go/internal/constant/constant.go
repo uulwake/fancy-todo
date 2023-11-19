@@ -2,6 +2,7 @@ package constant
 
 const (
 	TASK_STATUS_ON_GOING = "on_going"
+	TASK_STATUS_COMPLETED = "completed"
 )
 
 const (

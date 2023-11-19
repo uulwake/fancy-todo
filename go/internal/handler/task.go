@@ -213,7 +213,7 @@ func (th *TaskHandler) GetDetailById(c echo.Context) error {
 	if err != nil {
 		return libs.CustomError{
 			HTTPCode: http.StatusBadRequest,
-			Message: fmt.Sprintf("Invalid task ID %s", taskIdParam),
+			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
 		}
 	}
 
@@ -230,7 +230,43 @@ func (th *TaskHandler) GetDetailById(c echo.Context) error {
 }
 
 func (th *TaskHandler) UpdateById(c echo.Context) error {
-	return nil
+	var body TaskUpdateByIdBody
+	ctx, err := PreprocessedRequest(c, th.validate, &body)
+	if err != nil {
+		return err
+	}
+
+	userId, err := GetUserIdFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	taskIdParam := c.Param("taskId")
+	taskId, err := strconv.ParseInt(taskIdParam, 10, 64)
+	if err != nil {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
+		}
+	}
+
+	err = th.taskService.UpdateById(ctx, userId, taskId, service.TaskUpdateByIdInput{
+		Title: body.Title,
+		Description: body.Description,
+		Status: body.Status,
+		Order: body.Order,
+	})
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, TaskUpdateByIdResponse{
+		Data: TaskUpdateByIdData{
+			Task: model.Task{
+				ID: taskId,
+			},
+		},
+	})
 }
 
 func (th *TaskHandler) DeleteById(c echo.Context) error {

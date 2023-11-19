@@ -339,3 +339,95 @@ func (tr *TaskRepo) Search(ctx context.Context, userId int64, title string) ([]m
 
 	return tasks, nil
 }
+
+func (tr *TaskRepo) UpdateById(ctx context.Context, userId int64, taskId int64, task TaskUpdateByIdInput) error {
+	ub := sqlbuilder.PostgreSQL.NewUpdateBuilder().Update("tasks")
+
+	now := time.Now()
+	ub.Set(ub.Assign("updated_at", now))
+	esSources := []string{fmt.Sprintf("ctx._source.updated_at = '%s'", now.Format(time.RFC3339))}
+
+	if task.Title != "" {
+		ub.SetMore(ub.Assign("title", task.Title))
+		esSources = append(esSources, fmt.Sprintf("ctx._source.title = '%s'", task.Title))
+	}
+
+	if task.Description != "" {
+		ub.SetMore(ub.Assign("description", task.Description))
+		esSources = append(esSources, fmt.Sprintf("ctx._source.description = '%s'", task.Description))
+	}
+
+	if task.Status != "" {
+		ub.SetMore(ub.Assign("status", task.Status))
+		esSources = append(esSources, fmt.Sprintf("ctx_.source.status = '%s'", task.Status))
+	}
+
+	if task.Order != 0 {
+		ub.SetMore(ub.Assign("\"order\"", task.Order))
+		esSources = append(esSources, fmt.Sprintf("ctx._source.order = %d", task.Order))
+	}
+
+	query, args := ub.Where(ub.Equal("id", taskId)).Where(ub.Equal("user_id", userId)).Build()
+
+	tx, err := tr.db.Pg.Begin()
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(query, args...)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	body := map[string]any {
+		"query": map[string]any {
+			"bool": map[string]any {
+				"must": []map[string]any{
+					{
+						"match": map[string]any{
+							"id": taskId,
+						},
+					},
+					{
+						"match": map[string]any{
+							"user_id": userId,
+						},
+					},
+				},
+			},
+		},
+		"script": map[string]any{
+			"lang": "painless",
+			"source": strings.Join(esSources, ";"),
+		},
+	}
+
+	var bodyJson bytes.Buffer
+	err = json.NewEncoder(&bodyJson).Encode(body)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	response, err := tr.db.Es.UpdateByQuery(
+		[]string{constant.ES_INDEX_TASKS}, 
+		tr.db.Es.UpdateByQuery.WithBody(&bodyJson),
+	)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		fmt.Println(response)
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "error updating data to ElasticSearch",
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	return nil
+}

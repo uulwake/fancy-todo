@@ -19,3 +19,10 @@ type TaskGetTotalQuery struct {
 	Status string
 	TagId int64
 }
+
+type TaskUpdateByIdInput struct {
+	Title string
+	Description string
+	Status string
+	Order int
+}

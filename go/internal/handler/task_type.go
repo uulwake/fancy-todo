@@ -51,3 +51,18 @@ type TaskSearchData struct {
 type TaskSearchResponse struct {
 	Data TaskSearchData `json:"data"`
 }
+
+type TaskUpdateByIdBody struct {
+	Title string `json:"title"` 
+	Description string `json:"description"`
+	Status string `json:"status" validate:"omitempty,eq=on_going|eq=completed"`
+	Order int `json:"order" validate:"omitempty,gt=0"`
+}
+
+type TaskUpdateByIdData struct {
+	Task model.Task `json:"task"`
+}
+
+type TaskUpdateByIdResponse struct {
+	Data TaskUpdateByIdData `json:"data"`
+}
