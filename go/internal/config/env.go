@@ -4,7 +4,7 @@ import (
 	"os"
 
 	goEnv "github.com/Netflix/go-env"
-	"github.com/uulwake/godotenvsafe"
+	"github.com/joho/godotenv"
 )
 
 func NewEnv() (*Env, error) {
@@ -15,7 +15,7 @@ func NewEnv() (*Env, error) {
 		envFile = ".env"
 	}
 
-	err := godotenvsafe.Load(envFile)
+	err := godotenv.Load(envFile)
 	if err != nil {
 		return nil, err
 	}
@@ -30,10 +30,10 @@ func NewEnv() (*Env, error) {
 }
 
 type Env struct {
-	PgUrl string `env:"PG_URL"`
-	EsUrl string  `env:"ES_URL"`	
-	Port string  `env:"PORT"`
-	Salt int `env:"SALT"`
-	JwtSecret string `env:"JWT_SECRET"`
-	JwtExpired int `env:"JWT_EXPIRED"`
+	PgUrl string `env:"PG_URL,required=true"`
+	EsUrl string  `env:"ES_URL,required=true"`	
+	Port string  `env:"PORT,required=true"`
+	Salt int `env:"SALT,,required=true"`
+	JwtSecret string `env:"JWT_SECRET,required=true"`
+	JwtExpired int `env:"JWT_EXPIRED,required=true"`
 }

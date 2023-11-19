@@ -6,6 +6,7 @@ import (
 	"fancy-todo/internal/handler"
 	"fancy-todo/internal/repository"
 	"fancy-todo/internal/service"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -18,7 +19,7 @@ import (
 func main() {
 	env, err := config.NewEnv()
 	if err != nil {
-		log.Fatal("Failed reading environment variables", err)
+		log.Fatal("Failed reading environment variables: ", err)
 	}
 
 	db, err := database.NewDb(env)
@@ -58,5 +59,5 @@ func main() {
 	handler.InitTagHandler(v1Group.Group("/tags"), env, validate, tagService)
 
 	// run
-	e.Logger.Fatal(e.Start(":3001"))
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", env.Port)))
 }
