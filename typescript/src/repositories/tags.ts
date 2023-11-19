@@ -92,19 +92,26 @@ export class TagRepo implements ITagRepo {
   }
 
   async deleteTag(ctx: Context, userId: number, tagId: number): Promise<void> {
-    await this.db
-      .pg<TagModel>("tags")
-      .delete()
-      .where("user_id", userId)
-      .where("id", tagId);
+    const tx = await this.db.pg.transaction();
+    try {
+      await this.db
+        .pg<TagModel>("tags")
+        .delete()
+        .where("user_id", userId)
+        .where("id", tagId);
 
-    await this.db.es.deleteByQuery({
-      index: ES_INDEX.TAGS,
-      query: {
-        bool: {
-          must: [{ match: { id: tagId } }, { match: { user_id: userId } }],
+      await this.db.es.deleteByQuery({
+        index: ES_INDEX.TAGS,
+        query: {
+          bool: {
+            must: [{ match: { id: tagId } }, { match: { user_id: userId } }],
+          },
         },
-      },
-    });
+      });
+      await tx.commit();
+    } catch (err) {
+      await tx.rollback();
+      throw err;
+    }
   }
 }

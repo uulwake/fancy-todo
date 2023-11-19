@@ -124,8 +124,8 @@ export class TaskRepo implements ITaskRepo {
       query.orderBy(queryParam.sort_key, queryParam.sort_order);
     }
 
-    query.orderByRaw(`tasks."order" ASC NULLS LAST`)
-    query.orderBy("tasks.id", "ASC")
+    query.orderByRaw(`tasks."order" ASC NULLS LAST`);
+    query.orderBy("tasks.id", "ASC");
     const tasks = await query;
 
     const mapTagByTaskId = await this.getTagsByTaskId(
@@ -231,36 +231,59 @@ export class TaskRepo implements ITaskRepo {
     taskId: number,
     data: Partial<Pick<TaskModel, "title" | "description" | "status" | "order">>
   ) {
-    const updatedData: Partial<TaskModel> = { ...data, updated_at: new Date() };
-    await this.db
-      .pg<TaskModel>("tasks")
-      .update(updatedData)
-      .where("user_id", userId)
-      .where("id", taskId);
+    const tx = await this.db.pg.transaction();
+    try {
+      const esSources = [];
+      const updatedData: Partial<TaskModel> = {};
 
-    const esSources = [];
-    for (const key in updatedData) {
-      let value;
-      if (key === "updated_at") {
-        value = updatedData.updated_at!.toISOString();
-      } else {
-        value = updatedData[key as keyof Partial<TaskModel>];
+      updatedData.updated_at = new Date();
+      esSources.push(
+        `ctx._source.updated_at = '${updatedData.updated_at.toISOString()}'`
+      );
+
+      if ("title" in data) {
+        updatedData.title = data.title;
+        esSources.push(`ctx._source.title = '${data.title}'`);
       }
-      esSources.push(`ctx._source.${key} = '${value}'`);
-    }
 
-    await this.db.es.updateByQuery({
-      index: ES_INDEX.TASKS,
-      query: {
-        bool: {
-          must: [{ match: { id: taskId } }, { match: { user_id: userId } }],
+      if ("description" in data) {
+        updatedData.description = data.description;
+        esSources.push(`ctx._source.description = '${data.description}'`);
+      }
+
+      if ("status" in data) {
+        updatedData.status = data.status;
+        esSources.push(`ctx._source.status = '${data.status}'`);
+      }
+
+      if ("order" in data) {
+        updatedData.order = data.order;
+        esSources.push(`ctx._source.order = ${data.order}`);
+      }
+
+      await tx<TaskModel>("tasks")
+        .update(updatedData)
+        .where("user_id", userId)
+        .where("id", taskId);
+
+      await this.db.es.updateByQuery({
+        index: ES_INDEX.TASKS,
+        query: {
+          bool: {
+            must: [{ match: { id: taskId } }, { match: { user_id: userId } }],
+          },
         },
-      },
-      script: {
-        lang: "painless",
-        source: esSources.join(";"),
-      },
-    });
+        script: {
+          lang: "painless",
+          source: esSources.join(";"),
+        },
+      });
+
+      await tx.commit();
+    } catch (err) {
+      await tx.rollback();
+      throw err;
+    }
   }
 
   async deleteTask(
@@ -268,19 +291,26 @@ export class TaskRepo implements ITaskRepo {
     userId: number,
     taskId: number
   ): Promise<void> {
-    await this.db
-      .pg<TaskModel>("tasks")
-      .delete()
-      .where("id", taskId)
-      .where("user_id", userId);
+    const tx = await this.db.pg.transaction();
+    try {
+      await this.db
+        .pg<TaskModel>("tasks")
+        .delete()
+        .where("id", taskId)
+        .where("user_id", userId);
 
-    await this.db.es.deleteByQuery({
-      index: ES_INDEX.TASKS,
-      query: {
-        bool: {
-          must: [{ match: { id: taskId } }, { match: { user_id: userId } }],
+      await this.db.es.deleteByQuery({
+        index: ES_INDEX.TASKS,
+        query: {
+          bool: {
+            must: [{ match: { id: taskId } }, { match: { user_id: userId } }],
+          },
         },
-      },
-    });
+      });
+      await tx.commit();
+    } catch (err) {
+      await tx.rollback();
+      throw err;
+    }
   }
 }
