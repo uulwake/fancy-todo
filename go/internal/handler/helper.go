@@ -51,6 +51,19 @@ func GetUserIdFromContext(c echo.Context) (int64, error) {
 	}
 }
 
+func GetIdFromPathParam(c echo.Context, key string) (int64, error) {
+	idParam := c.Param(key)
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		return 0, libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: fmt.Sprintf("invalid %s ID",key),
+		}
+	}
+
+	return id, nil
+}
+
 func ConvertCommonQueryParam(c echo.Context) (libs.QueryParam, error) {
 	pageSizeStr := c.QueryParam("page_size")
 	pageNumberStr := c.QueryParam("page_number")

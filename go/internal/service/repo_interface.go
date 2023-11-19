@@ -25,4 +25,5 @@ type ITagRepo interface {
 	Create(ctx context.Context, data repository.TagCreateData) (int64, error)
 	AddExistingTagToTask(ctx context.Context, userId int64, tagId int64, taskId int64) error
 	Search(ctx context.Context, userId int64, name string) ([]model.Tag, error)
+	DeleteById(ctx context.Context, userId int64, tagId int64) error 
 }

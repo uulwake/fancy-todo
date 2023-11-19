@@ -222,3 +222,64 @@ func (tr *TagRepo) Search(ctx context.Context, userId int64, name string) ([]mod
 
 	return tags, nil
 }
+
+func (tr *TagRepo) DeleteById(ctx context.Context, userId int64, tagId int64) error {
+	db := sqlbuilder.PostgreSQL.NewDeleteBuilder()
+	db.DeleteFrom("tags")
+	db.Where(db.Equal("id", tagId), db.Equal("user_id", userId))
+
+	query, args := db.Build()
+	tx, err := tr.db.Pg.Begin()
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(query, args...)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	body := map[string]any {
+		"query": map[string]any {
+			"bool": map[string]any {
+				"must": []map[string]any {
+					{
+						"match": map[string]any {
+							"id": tagId,
+						},
+					},
+					{
+						"match": map[string]any {
+							"user_id": userId,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var bodyJson bytes.Buffer
+	err = json.NewEncoder(&bodyJson).Encode(body)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	response, err := tr.db.Es.DeleteByQuery([]string{constant.ES_INDEX_TAGS}, &bodyJson)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "error deleting data to ElasticSearch",
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	return nil
+}

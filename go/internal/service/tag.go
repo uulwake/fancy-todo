@@ -34,3 +34,7 @@ func (ts *TagService) AddExistingTagToTask(ctx context.Context, userId int64, ta
 func (ts *TagService) Search(ctx context.Context, userId int64, name string) ([]model.Tag, error) {
 	return ts.tagRepo.Search(ctx, userId, name)
 }
+
+func (ts *TagService) DeleteById(ctx context.Context, userId int64, tagId int64) error {
+	return ts.tagRepo.DeleteById(ctx, userId, tagId)
+}

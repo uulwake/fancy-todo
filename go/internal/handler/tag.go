@@ -138,6 +138,33 @@ func (th *TagHandler) Search(c echo.Context) error {
 }
 
 func (th *TagHandler) DeleteById(c echo.Context) error {
-	return nil
+	ctx, err := PreprocessedRequest(c, th.validate, nil)
+	if err != nil {
+		return err
+	}
+
+	userId, err := GetUserIdFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	// TODO: refactor all getIDfromPathParam
+	tagId, err := GetIdFromPathParam(c, "tagId")
+	if err != nil {
+		return err
+	}
+
+	err = th.tagService.DeleteById(ctx, userId, tagId)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, TagDeleteByIdResponse{
+		Data: TagDeleteByIdData{
+			Tag: model.Tag{
+				ID: tagId,
+			},
+		},
+	})
 }
 

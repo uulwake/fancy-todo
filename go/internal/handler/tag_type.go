@@ -30,3 +30,11 @@ type TagSearchResonse struct {
 type TagSearchData struct {
 	Tags []model.Tag `json:"tags"`
 }
+
+type TagDeleteByIdResponse struct {
+	Data TagDeleteByIdData `json:"data"`
+}
+
+type TagDeleteByIdData struct {
+	Tag model.Tag `json:"tag"`
+}
