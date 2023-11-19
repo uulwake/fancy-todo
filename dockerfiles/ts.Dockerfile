@@ -15,7 +15,6 @@ FROM node:18-alpine
 WORKDIR /usr/app
 
 COPY --from=builder /usr/app/ncc .
-
 COPY --from=builder /usr/app/.env.production .
 
 RUN apk --no-cache add curl
