@@ -208,13 +208,9 @@ func (th *TaskHandler) GetDetailById(c echo.Context) error {
 		return err
 	}
 	
-	taskIdParam := c.Param("taskId")
-	taskId, err := strconv.ParseInt(taskIdParam, 10, 64)
+	taskId, err := GetIdFromPathParam(c, "taskId")
 	if err != nil {
-		return libs.CustomError{
-			HTTPCode: http.StatusBadRequest,
-			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
-		}
+		return err
 	}
 
 	task, err := th.taskService.GetDetail(ctx, userId, taskId)
@@ -241,13 +237,9 @@ func (th *TaskHandler) UpdateById(c echo.Context) error {
 		return err
 	}
 
-	taskIdParam := c.Param("taskId")
-	taskId, err := strconv.ParseInt(taskIdParam, 10, 64)
+	taskId, err := GetIdFromPathParam(c, "taskId")
 	if err != nil {
-		return libs.CustomError{
-			HTTPCode: http.StatusBadRequest,
-			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
-		}
+		return err
 	}
 
 	err = th.taskService.UpdateById(ctx, userId, taskId, service.TaskUpdateByIdInput{
@@ -280,13 +272,9 @@ func (th *TaskHandler) DeleteById(c echo.Context) error {
 		return err
 	}
 
-	taskIdParam := c.Param("taskId")
-	taskId, err := strconv.ParseInt(taskIdParam, 10, 64)
+	taskId, err := GetIdFromPathParam(c, "taskId")
 	if err != nil {
-		return libs.CustomError{
-			HTTPCode: http.StatusBadRequest,
-			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
-		}
+		return err
 	}
 
 	err = th.taskService.DeleteById(ctx, userId, taskId)

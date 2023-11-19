@@ -3,12 +3,9 @@ package handler
 import (
 	"fancy-todo/internal/config"
 	"fancy-todo/internal/handler/internal/middleware"
-	"fancy-todo/internal/libs"
 	"fancy-todo/internal/model"
 	"fancy-todo/internal/service"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -78,22 +75,14 @@ func (th *TagHandler) AddExistingTagToTask(c echo.Context) error {
 		return err
 	}
 
-	taskIdParam := c.Param("taskId")
-	taskId, err := strconv.ParseInt(taskIdParam, 10, 64)
+	taskId, err := GetIdFromPathParam(c, "taskId")
 	if err != nil {
-		return libs.CustomError{
-			HTTPCode: http.StatusBadRequest,
-			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
-		}
+		return err
 	}
 
-	tagIdParam := c.Param("tagId")
-	tagId, err := strconv.ParseInt(tagIdParam, 10, 64)
+	tagId, err := GetIdFromPathParam(c, "tagId")
 	if err != nil {
-		return libs.CustomError{
-			HTTPCode: http.StatusBadRequest,
-			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
-		}
+		return err
 	}
 
 	err = th.tagService.AddExistingTagToTask(ctx, userId, tagId, taskId)
@@ -148,7 +137,6 @@ func (th *TagHandler) DeleteById(c echo.Context) error {
 		return err
 	}
 
-	// TODO: refactor all getIDfromPathParam
 	tagId, err := GetIdFromPathParam(c, "tagId")
 	if err != nil {
 		return err
