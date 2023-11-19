@@ -316,48 +316,44 @@ describe("Task & Tag Test", () => {
 
     describe("Delete", () => {
       it("Should delete task", async () => {
+        let { data } = await axios({
+          url: "http://localhost:3001/v1/tasks",
+          method: "POST",
+          headers: { "jwt-token": jwtToken },
+          data: {
+            title: "delete_title",
+          },
+        });
+        const taskId = data.data.task.id;
+        await delay(2e3);
+
+        await axios({
+          url: "http://localhost:3001/v1/tasks/" + taskId,
+          method: "DELETE",
+          headers: { "jwt-token": jwtToken },
+        });
+        await delay(2e3);
+
         try {
-          let { data } = await axios({
-            url: "http://localhost:3001/v1/tasks",
-            method: "POST",
-            headers: { "jwt-token": jwtToken },
-            data: {
-              title: "delete_title",
-            },
-          });
-          const taskId = data.data.task.id;
-          await delay(2e3);
-
-          await axios({
-            url: "http://localhost:3001/v1/tasks/" + taskId,
-            method: "DELETE",
-            headers: { "jwt-token": jwtToken },
-          });
-          await delay(2e3);
-
-          try {
-            ({ data } = await axios({
-              url: "http://localhost:3001/v1/tasks/" + taskId,
-              method: "GET",
-              headers: { "jwt-token": jwtToken },
-            }));
-
-            expect(data.data.task).toEqual(null);
-          } catch (err) {
-            expect(err.response.status !== 200).toEqual(true);
-          }
-
           ({ data } = await axios({
-            url: "http://localhost:3001/v1/tasks/search",
-            params: { title: "delete_title" },
+            url: "http://localhost:3001/v1/tasks/" + taskId,
             method: "GET",
             headers: { "jwt-token": jwtToken },
           }));
 
-          expect(data.data.tasks.length).toEqual(0);
+          expect(data.data.task).toEqual(null);
         } catch (err) {
-          console.log(err.response.data);
+          expect(err.response.status !== 200).toEqual(true);
         }
+
+        ({ data } = await axios({
+          url: "http://localhost:3001/v1/tasks/search",
+          params: { title: "delete_title" },
+          method: "GET",
+          headers: { "jwt-token": jwtToken },
+        }));
+
+        expect(data.data.tasks.length).toEqual(0);
       });
 
       it("Should delete tag", async () => {
