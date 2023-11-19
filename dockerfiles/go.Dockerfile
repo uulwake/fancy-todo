@@ -7,8 +7,6 @@ COPY ./go .
 
 RUN go env -w GOPROXY="https://goproxy.io,direct"
 
-RUN go env GOPROXY
-
 RUN go mod tidy
 
 RUN go build -o app ./cmd/api/main.go
@@ -26,4 +24,4 @@ RUN apk --no-cache add curl
 
 EXPOSE 3001
 
-CMD [ "app" ]
+CMD [ "./app" ]
