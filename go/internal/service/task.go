@@ -79,3 +79,7 @@ func (ts *TaskService) UpdateById(ctx context.Context, userId int64, taskId int6
 		Order: task.Order,
 	})
 }
+
+func (ts *TaskService) DeleteById(ctx context.Context, userId int64, taskId int64) error {
+	return ts.taskRepo.DeleteById(ctx, userId, taskId)
+}

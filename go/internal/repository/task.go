@@ -418,7 +418,6 @@ func (tr *TaskRepo) UpdateById(ctx context.Context, userId int64, taskId int64, 
 	}
 
 	if response.StatusCode != http.StatusOK {
-		fmt.Println(response)
 		return libs.CustomError{
 			HTTPCode: http.StatusBadRequest,
 			Message: "error updating data to ElasticSearch",
@@ -426,6 +425,68 @@ func (tr *TaskRepo) UpdateById(ctx context.Context, userId int64, taskId int64, 
 	}
 
 	if err := tx.Commit(); err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	return nil
+}
+
+func (tr *TaskRepo) DeleteById(ctx context.Context, userId int64, taskId int64) error {
+	db := sqlbuilder.PostgreSQL.NewDeleteBuilder()
+	db.DeleteFrom("tasks")
+	db.Where(db.Equal("id", taskId), db.Equal("user_id", userId))
+
+	query, args := db.Build()
+	tx, err := tr.db.Pg.Begin()
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(query, args...)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	body := map[string]any {
+		"query": map[string]any {
+			"bool": map[string]any {
+				"must": []map[string]any {
+					{
+						"match": map[string]any {
+							"id": taskId,
+						},
+					},
+					{
+						"match": map[string]any {
+							"user_id": userId,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var bodyJson bytes.Buffer
+	err = json.NewEncoder(&bodyJson).Encode(body)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	response, err := tr.db.Es.DeleteByQuery([]string{constant.ES_INDEX_TASKS}, &bodyJson)
+	if err != nil {
+		return libs.DefaultInternalServerError(err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		fmt.Println(response)
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "error deleting data to ElasticSearch",
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
 		return libs.DefaultInternalServerError(err)
 	}
 

@@ -19,4 +19,5 @@ type ITaskService interface {
 	GetTotal(ctx context.Context, userId int64, queryParam service.TaskGetTotalQueryParam) (int64, error)
 	Search(ctx context.Context, userId int64, title string) ([]model.Task, error)
 	UpdateById(ctx context.Context, userId int64, taskId int64, task service.TaskUpdateByIdInput) error
+	DeleteById(ctx context.Context, userId int64, taskId int64) error
 }

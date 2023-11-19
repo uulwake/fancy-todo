@@ -66,3 +66,10 @@ type TaskUpdateByIdData struct {
 type TaskUpdateByIdResponse struct {
 	Data TaskUpdateByIdData `json:"data"`
 }
+type TaskDeleteByIdData struct {
+	Task model.Task `json:"task"`
+}
+
+type TaskDeleteByIdResponse struct {
+	Data TaskUpdateByIdData `json:"data"`
+}

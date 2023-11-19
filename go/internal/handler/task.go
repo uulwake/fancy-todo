@@ -270,5 +270,35 @@ func (th *TaskHandler) UpdateById(c echo.Context) error {
 }
 
 func (th *TaskHandler) DeleteById(c echo.Context) error {
-	return nil
+	ctx, err := PreprocessedRequest(c, th.validate, nil)
+	if err != nil {
+		return err
+	}
+
+	userId, err := GetUserIdFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	taskIdParam := c.Param("taskId")
+	taskId, err := strconv.ParseInt(taskIdParam, 10, 64)
+	if err != nil {
+		return libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: fmt.Sprintf("invalid task ID %s", taskIdParam),
+		}
+	}
+
+	err = th.taskService.DeleteById(ctx, userId, taskId)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, TaskDeleteByIdResponse{
+		Data: TaskUpdateByIdData{
+			Task: model.Task{
+				ID: taskId,
+			},
+		},
+	})
 }

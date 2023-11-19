@@ -18,4 +18,5 @@ type ITaskRepo interface {
 	GetTotal(ctx context.Context, userId int64, query repository.TaskGetTotalQuery) (int64, error)
 	Search(ctx context.Context, userId int64, title string) ([]model.Task, error)
 	UpdateById(ctx context.Context, userId int64, taskId int64, task repository.TaskUpdateByIdInput) error
+	DeleteById(ctx context.Context, userId int64, taskId int64) error 
 }
