@@ -11,6 +11,7 @@ export const taskValidators: TaskHandlerValidatorType = {
       .withMessage("title is not string")
       .bail(),
     body("description")
+      .optional()
       .notEmpty()
       .withMessage("description is empty")
       .isString()

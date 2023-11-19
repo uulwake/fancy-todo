@@ -11,17 +11,6 @@ export default () => {
     let message = err.message || "Server Error";
     let status = err.status || 500;
 
-    if (err.schema && err.table) {
-      if (err.code === PG_ERROR_CODE.CONSTRAINT.UNIQUE) {
-        const matches = err.detail.matchAll(/\(([\w@\.]+)\)/gim);
-        message = `${matches.next().value[1]} ${
-          matches.next().value[1]
-        } already exists`;
-      } else {
-        message = err.detail;
-      }
-    }
-
     res.status(status).json({ message });
   };
 };
