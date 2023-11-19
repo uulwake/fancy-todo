@@ -317,6 +317,12 @@ func (tr *TaskRepo) Search(ctx context.Context, userId int64, title string) ([]m
 	if err != nil {
 		return tasks, libs.DefaultInternalServerError(err)
 	}
+	if response.StatusCode != http.StatusOK {
+		return tasks, libs.CustomError{
+			HTTPCode: http.StatusBadRequest,
+			Message: "error when searching tags in ElasticSearch",
+		}
+	}
 
 	result := make(map[string]any)
 	json.NewDecoder(response.Body).Decode(&result)

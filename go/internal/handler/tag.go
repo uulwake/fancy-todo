@@ -114,7 +114,27 @@ func (th *TagHandler) AddExistingTagToTask(c echo.Context) error {
 }
 
 func (th *TagHandler) Search(c echo.Context) error {
-	return nil
+	ctx, err := PreprocessedRequest(c, th.validate, nil)
+	if err != nil {
+		return err
+	}
+
+	userId, err := GetUserIdFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	name := c.QueryParam("name")
+	tags, err := th.tagService.Search(ctx, userId, name)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, TagSearchResonse{
+		Data: TagSearchData{
+			Tags: tags,
+		},
+	})
 }
 
 func (th *TagHandler) DeleteById(c echo.Context) error {

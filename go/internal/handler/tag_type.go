@@ -22,3 +22,11 @@ type TagAddExistingToTaskResponse struct {
 type TagAddExistingToTaskData struct {
 	Tag model.Tag `json:"tag"`
 }
+
+type TagSearchResonse struct {
+	Data TagSearchData `json:"data"`
+}
+
+type TagSearchData struct {
+	Tags []model.Tag `json:"tags"`
+}
