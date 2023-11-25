@@ -9,7 +9,9 @@
     "db:up:pg": "docker compose up -d pg && dbmate up",
     "db:up:es": "docker compose up -d es && dbmate up",
     "build": "tsc && ncc build dist/index.js -o ncc",
-    "dev": "npm run build && NODE_ENV=development node ncc/index.js"
+    "dev": "npm run build && NODE_ENV=development node ncc/index.js",
+    "test": "tsc && jest ./dist",
+    "test:coverage": "tsc && jest ./dist --coverage"
   },
   "keywords": [],
   "author": "uulwake",
@@ -28,16 +30,20 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@jest-mock/express": "^2.0.2",
     "@types/bcrypt": "^5.0.1",
     "@types/cors": "^2.8.15",
     "@types/express": "^4.17.20",
     "@types/express-validator": "^3.0.0",
+    "@types/jest": "^29.5.10",
     "@types/jsonwebtoken": "^9.0.4",
     "@types/knex": "^0.16.1",
     "@types/node": "^20.8.10",
     "@types/request-ip": "^0.0.41",
     "@types/uuid": "^9.0.7",
     "@vercel/ncc": "^0.38.1",
+    "jest": "^29.7.0",
+    "jest-mock-extended": "^3.0.5",
     "typescript": "^5.2.2"
   }
 }

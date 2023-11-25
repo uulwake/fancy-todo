@@ -38,6 +38,9 @@ run\:ts:
 test\:ts:
 	cd ./tests && make ts:test
 
+test\:unit\:ts:
+	cd ./typescript && npm run test:coverage
+
 # go
 build\:go:
 	docker compose build go
