@@ -29,21 +29,21 @@ wait\:es:
 	@printf "waiting ElasticSeach...\n" && chmod +x ./wait-for-it.sh && ./wait-for-it.sh es:9200 -- echo "waiting is done"
 
 # ts
-ts\:build:
+build\:ts:
 	docker compose build ts
 
-ts\:run:
+run\:ts:
 	make db:up && docker compose up -d ts
 
-ts\:test:
+test\:ts:
 	cd ./tests && make ts:test
 
 # go
-go\:build:
+build\:go:
 	docker compose build go
 
-go\:run:
+run\:go:
 	make db:up && docker compose up -d go
 
-go\:test:
+test\:go:
 	cd ./tests && make go:test
