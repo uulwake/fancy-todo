@@ -1,8 +1,8 @@
 default: hello
 
 hello: 
-	@printf "Welcome to the Fancy Todo written in 5 different languages.\n\
-	They are Typescript, Go, Java, Rust, and Elixir.\n\
+	@printf "Welcome to the Fancy Todo written in 3 different languages.\n\
+	They are Typescript, Go, and Rust.\n\
 	Enjoy.\n"
 
 # tear down
