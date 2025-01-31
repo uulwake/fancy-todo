@@ -39,17 +39,20 @@ func main() {
 
 	// handler
 	e := echo.New()
-	e.GET("/hc", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, struct{ Status string `json:"status"`}{Status: "ok"})
-	})
 
 	e.Use(middleware.RequestID())
+	e.Use(middleware.CORS())
+
 	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		ErrorMessage: "request timeout",
 		Timeout: 30 * time.Second,
 	}))
 	e.IPExtractor = echo.ExtractIPFromRealIPHeader()
 	e.HTTPErrorHandler = handler.CustomHTTPErrorHandler
+
+	e.GET("/hc", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, struct{ Status string `json:"status"`}{Status: "ok"})
+	})
 
 	validate := validator.New()
 
